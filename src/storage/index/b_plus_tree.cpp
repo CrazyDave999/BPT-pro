@@ -33,10 +33,11 @@ auto BPLUSTREE_TYPE::IsEmpty() const -> bool {
 }
 
 INDEX_TEMPLATE_ARGUMENTS
-void BPLUSTREE_TYPE::Find(const KeyType &key, std::vector<KeyType> *result) {
+void BPLUSTREE_TYPE::Find(const KeyType &key, vector<KeyType> *result) {
   auto header_page_guard = bpm_->FetchPageRead(header_page_id_);
   auto header_page = header_page_guard.As<BPlusTreeHeaderPage>();
   if (header_page->root_page_id_ == INVALID_PAGE_ID) {
+    header_page_guard.Drop();
     return;
   }
   auto guard = bpm_->FetchPageRead(header_page->root_page_id_);
@@ -45,7 +46,7 @@ void BPLUSTREE_TYPE::Find(const KeyType &key, std::vector<KeyType> *result) {
 }
 
 INDEX_TEMPLATE_ARGUMENTS
-void BPLUSTREE_TYPE::Find(const KeyType &key, std::vector<KeyType> *result, ReadPageGuard &guard) {
+void BPLUSTREE_TYPE::Find(const KeyType &key, vector<KeyType> *result, ReadPageGuard &guard) {
   auto *page = guard.template As<BPlusTreePage>();
   if (page->IsLeafPage()) {
     auto leaf_page = reinterpret_cast<const LeafPage *>(page);
@@ -339,7 +340,7 @@ auto BPLUSTREE_TYPE::SplitInternalPage(InternalPage *page, page_id_t *n_page_id,
 }
 
 INDEX_TEMPLATE_ARGUMENTS
-void BPLUSTREE_TYPE::RemoveKeyValue(LeafPage *page, const KeyType &key) const {
+void BPLUSTREE_TYPE::RemoveKeyValue(LeafPage *page, const KeyType &key) {
   int l = BinarySearch(page, key);
   if (l != -1) {
     page->RemoveAt(l);
@@ -347,10 +348,13 @@ void BPLUSTREE_TYPE::RemoveKeyValue(LeafPage *page, const KeyType &key) const {
 }
 
 INDEX_TEMPLATE_ARGUMENTS
-auto BPLUSTREE_TYPE::TryAdoptFromNeighbor(LeafPage *page, Context &ctx) const -> bool {
+auto BPLUSTREE_TYPE::TryAdoptFromNeighbor(LeafPage *page, Context &ctx) -> bool {
   //  std::cout << "Trying to adopt a child from neighbor. Type: leaf_page\n Before: " << page->ToString()
   //            << "\n";  // debug
-  auto *p_page = ctx.write_set_[ctx.write_set_.size() - 2].AsMut<InternalPage>();
+  //  auto *p_page = ctx.write_set_[ctx.write_set_.size() - 2].AsMut<InternalPage>();
+  auto it = ctx.write_set_.end();
+  --it, --it;
+  auto *p_page = it->AsMut<InternalPage>();
   int l = ctx.index_set_.back();
   if (l < p_page->GetSize() - 1) {
     auto r_page_id = p_page->ValueAt(l + 1);
@@ -386,10 +390,13 @@ auto BPLUSTREE_TYPE::TryAdoptFromNeighbor(LeafPage *page, Context &ctx) const ->
   return false;
 }
 INDEX_TEMPLATE_ARGUMENTS
-void BPLUSTREE_TYPE::MergeLeafPage(LeafPage *page, Context &ctx) const {
+void BPLUSTREE_TYPE::MergeLeafPage(LeafPage *page, Context &ctx)  {
   // 必须先 TryAdoptFromNeighbor，再考虑 MergeLeafPage。领养失败则必定能合并
   //  std::cout << "Merging a page. Type: leaf_page.\n Before: " << page->ToString() << "\n";  // debug
-  auto *p_page = ctx.write_set_[ctx.write_set_.size() - 2].AsMut<InternalPage>();
+  //  auto *p_page = ctx.write_set_[ctx.write_set_.size() - 2].AsMut<InternalPage>();
+  auto it = ctx.write_set_.end();
+  --it, --it;
+  auto *p_page = it->AsMut<InternalPage>();
   int l = ctx.index_set_.back();
   if (l < p_page->GetSize() - 1) {
     auto r_page_id = p_page->ValueAt(l + 1);
@@ -424,10 +431,13 @@ void BPLUSTREE_TYPE::MergeLeafPage(LeafPage *page, Context &ctx) const {
   //  std::cout << "Successfully merged. After merging, l_page: " << l_page->ToString() << "\n";  // debug
 }
 INDEX_TEMPLATE_ARGUMENTS
-auto BPLUSTREE_TYPE::TryAdoptFromNeighbor(InternalPage *page, Context &ctx) const -> bool {
+auto BPLUSTREE_TYPE::TryAdoptFromNeighbor(InternalPage *page, Context &ctx)-> bool {
   //  std::cout << "Trying to adopt a child from neighbor. Type: leaf_page\n Before: " << page->ToString()
   //            << "\n";  // debug
-  auto *p_page = ctx.write_set_[ctx.write_set_.size() - 2].AsMut<InternalPage>();
+  //  auto *p_page = ctx.write_set_[ctx.write_set_.size() - 2].AsMut<InternalPage>();
+  auto it = ctx.write_set_.end();
+  --it, --it;
+  auto *p_page = it->AsMut<InternalPage>();
   int l = ctx.index_set_.back();
   if (l < p_page->GetSize() - 1) {
     auto r_page_id = p_page->ValueAt(l + 1);
@@ -463,10 +473,13 @@ auto BPLUSTREE_TYPE::TryAdoptFromNeighbor(InternalPage *page, Context &ctx) cons
   return false;
 }
 INDEX_TEMPLATE_ARGUMENTS
-void BPLUSTREE_TYPE::MergeInternalPage(InternalPage *page, Context &ctx) const {
+void BPLUSTREE_TYPE::MergeInternalPage(InternalPage *page, Context &ctx) {
   // 必须先 TryAdoptFromNeighbor，再考虑 MergeLeafPage。领养失败则必定能合并
   //  std::cout << "Merging a page. Type: leaf_page.\n Before: " << page->ToString() << "\n";  // debug
-  auto *p_page = ctx.write_set_[ctx.write_set_.size() - 2].AsMut<InternalPage>();
+  //  auto *p_page = ctx.write_set_[ctx.write_set_.size() - 2].AsMut<InternalPage>();
+  auto it = ctx.write_set_.end();
+  --it, --it;
+  auto *p_page = it->AsMut<InternalPage>();
   int l = ctx.index_set_.back();
   if (l < p_page->GetSize() - 1) {
     auto r_page_id = p_page->ValueAt(l + 1);
@@ -501,7 +514,7 @@ void BPLUSTREE_TYPE::MergeInternalPage(InternalPage *page, Context &ctx) const {
 
 INDEX_TEMPLATE_ARGUMENTS
 auto BPLUSTREE_TYPE::Insert(const KeyType &key, const ValueType &value, BPlusTree::Protocol protocol)
-    -> std::pair<bool, bool> {
+    -> pair<bool, bool> {
   Context ctx;
   if (protocol == Protocol::Pessimistic) {
     ctx.header_write_guard_ = bpm_->FetchPageWrite(header_page_id_);
@@ -586,7 +599,7 @@ auto BPLUSTREE_TYPE::Insert(const KeyType &key, const ValueType &value, BPlusTre
 }
 
 INDEX_TEMPLATE_ARGUMENTS
-auto BPLUSTREE_TYPE::Remove(const KeyType &key, BPlusTree::Protocol protocol) -> std::pair<bool, bool> {
+auto BPLUSTREE_TYPE::Remove(const KeyType &key, BPlusTree::Protocol protocol) -> pair<bool, bool> {
   Context ctx;
   if (protocol == Protocol::Pessimistic) {
     // 用栈模拟递归
@@ -652,7 +665,7 @@ auto BPLUSTREE_TYPE::Remove(const KeyType &key, BPlusTree::Protocol protocol) ->
   }
   auto page_id = ctx.root_page_id_;
   ctx.read_set_.push_back(bpm_->FetchPageRead(page_id));
-  auto bpt_page = ctx.read_set_.back().As<BPlusTreePage>();
+  auto *bpt_page = ctx.read_set_.back().As<BPlusTreePage>();
   while (!bpt_page->IsLeafPage()) {
     auto *internal_page = reinterpret_cast<const InternalPage *>(bpt_page);
     auto l = UpperBound(internal_page, key) - 1;

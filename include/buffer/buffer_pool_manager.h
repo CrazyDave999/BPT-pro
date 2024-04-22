@@ -1,12 +1,10 @@
 #pragma once
-
-#include <list>
-#include <memory>
 #include <mutex>  // NOLINT
-#include <unordered_map>
-
 #include "buffer/lru_k_replacer.h"
 #include "common/config.h"
+#include "data_structures/map.h"
+#include "data_structures/linked_hashmap.h"
+#include "data_structures/list.h"
 #include "storage/disk/my_disk_manager.h"
 #include "storage/page/page.h"
 #include "storage/page/page_guard.h"
@@ -33,7 +31,7 @@ class BufferPoolManager {
   ~BufferPoolManager();
 
   /** @brief Return the size (number of frames) of the buffer pool. */
-  auto GetPoolSize() -> size_t { return pool_size_; }
+  auto GetPoolSize() const -> size_t { return pool_size_; }
 
   /** @brief Return the pointer to all the pages in the buffer pool. */
   auto GetPages() -> Page * { return pages_; }
@@ -163,20 +161,18 @@ class BufferPoolManager {
  private:
   /** Number of pages in the buffer pool. */
   const size_t pool_size_;
-  /** The next page id to be allocated  */
-  std::atomic<page_id_t> next_page_id_ = 0;
 
   /** Array of buffer pool pages. */
   Page *pages_;
   /** Pointer to the disk manager. */
   MyDiskManager *disk_manager_;
   /** Page table for keeping track of buffer pool pages. */
-  std::unordered_map<page_id_t, frame_id_t> page_table_;
+  linked_hashmap<page_id_t, frame_id_t> page_table_;
   /** Replacer to find unpinned pages for replacement. */
-  std::unique_ptr<LRUKReplacer> replacer_;
+  LRUKReplacer *replacer_;
   /** List of free frames that don't have any pages on them. */
-  std::list<frame_id_t> free_list_;
+  list<frame_id_t> free_list_;
   /** This latch protects shared data structures. We recommend updating this comment to describe what it protects. */
-  std::mutex latch_;
+  //  std::mutex latch_;
 };
 }  // namespace CrazyDave

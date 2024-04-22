@@ -20,8 +20,8 @@ class Page {
  public:
   /** Constructor. Zeros out the page data. */
   Page() {
-    //    data_ = new char[BUSTUB_PAGE_SIZE];
-    ResetMemory();
+    //    data_ = new char[BUSTUB_PAGE_SIZE]{};
+    //    ResetMemory();
   }
 
   /** Default destructor. */
@@ -30,9 +30,7 @@ class Page {
   }
 
   /** @return the actual data contained within this page */
-  inline auto GetData() -> char * {
-    return data_;
-  }
+  inline auto GetData() -> char * { return data_; }
 
   /** @return the page id of this page */
   inline auto GetPageId() const -> page_id_t { return page_id_; }
@@ -58,7 +56,6 @@ class Page {
  protected:
   static_assert(sizeof(page_id_t) == 4);
 
-  static constexpr size_t SIZE_PAGE_HEADER = 8;
   static constexpr size_t OFFSET_PAGE_START = 0;
 
  private:

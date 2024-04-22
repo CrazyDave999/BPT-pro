@@ -40,13 +40,13 @@ class MyDiskManager {
     }
   }
   void WritePage(page_id_t page_id, const char *page_data) {
-    std::scoped_lock scoped_io_latch(io_latch_);
+    //    std::scoped_lock scoped_io_latch(io_latch_);
     int offset = page_id * BUSTUB_PAGE_SIZE;
     data_file_.SetWritePointer(offset);
     data_file_.Write(page_data, BUSTUB_PAGE_SIZE);
   }
   void ReadPage(page_id_t page_id, char *page_data) {
-    std::scoped_lock scoped_db_io_latch(io_latch_);
+    //    std::scoped_lock scoped_db_io_latch(io_latch_);
     int offset = page_id * BUSTUB_PAGE_SIZE;
     data_file_.SetReadPointer(offset);
     data_file_.Read(page_data, BUSTUB_PAGE_SIZE);

@@ -1,9 +1,6 @@
 #pragma once
 
 #include <string>
-#include <utility>
-#include <vector>
-
 #include "storage/page/b_plus_tree_page.h"
 
 namespace CrazyDave {
@@ -59,7 +56,7 @@ class BPlusTreeLeafPage : public BPlusTreePage {
 
   auto PairAt(int index) const -> const MappingType &;
 
-  void InsertAt(int index, const MappingType &pair);
+  void InsertAt(int index, const MappingType &_pair);
 
   auto LowerBoundByFirst(const KeyType &key, const KeyComparator &cmp) const -> int;
 

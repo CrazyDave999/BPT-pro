@@ -7,6 +7,7 @@ namespace CrazyDave {
 template <size_t L>
 class String {
   char str_[L]{'\0'};
+
  public:
   String() = default;
   String(const char *s) { strcpy(str_, s); }
@@ -38,32 +39,39 @@ class String {
 };
 
 class Comparator;
-
-template <class Tp1, class Tp2>
-class Pair {
-  friend class Comparator;
-
- private:
-  Tp1 first_{};
-  Tp2 second_{};
-
+template <class T1, class T2>
+class pair {
  public:
-  Pair() = default;
-  Pair(const Tp1 &first, const Tp2 &second) : first_(first), second_(second) {}
-  auto GetFirst() const -> const Tp1 & { return first_; }
-  auto GetSecond() const -> const Tp2 & { return second_; }
-  auto operator<(const Pair &rhs) const -> bool {
-    if (first_ != rhs.first_) {
-      return first_ < rhs.first_;
+  T1 first;
+  T2 second;
+  constexpr pair() : first(), second() {}
+  pair(const pair &other) = default;
+  pair &operator=(const pair &other) {
+    if (this == &other) {
+      return *this;
     }
-    return second_ < rhs.second_;
+    first = other.first;
+    second = other.second;
+    return *this;
+  }
+  pair(pair &&other) noexcept = default;
+  pair(const T1 &x, const T2 &y) : first(x), second(y) {}
+  template <class U1, class U2>
+  pair(U1 &&x, U2 &&y) : first(x), second(y) {}
+  template <class U1, class U2>
+  explicit pair(const pair<U1, U2> &other) : first(other.first), second(other.second) {}
+  template <class U1, class U2>
+  explicit pair(pair<U1, U2> &&other) : first(other.first), second(other.second) {}
+  auto operator<(const pair &rhs) const -> bool {
+    if (first != rhs.first) {
+      return first < rhs.first;
+    }
+    return second < rhs.second;
   }
 };
 
-template class Pair<String<65>, page_id_t>;
-
 using str_t = String<65>;
-using key_t = Pair<str_t, page_id_t>;
+using key_t = pair<str_t, page_id_t>;
 class Comparator {
  public:
   auto operator()(const key_t &k1, const key_t &k2) const -> int {
@@ -76,19 +84,19 @@ class Comparator {
     return 0;
   }
   auto operator()(const str_t &s, const key_t &k) const -> int {
-    if (s < k.first_) {
+    if (s < k.first) {
       return -1;
     }
-    if (k.first_ < s) {
+    if (k.first < s) {
       return 1;
     }
     return 0;
   }
   auto operator()(const key_t &k, const str_t &s) const -> int {
-    if (k.first_ < s) {
+    if (k.first < s) {
       return -1;
     }
-    if (s < k.first_) {
+    if (s < k.first) {
       return 1;
     }
     return 0;
@@ -103,21 +111,6 @@ class Comparator {
     return 0;
   }
 };
-template <class T1, class T2>
-class pair {
- public:
-  T1 first;
-  T2 second;
-  constexpr pair() : first(), second() {}
-  pair(const pair &other) = default;
-  pair(pair &&other)  noexcept = default;
-  pair(const T1 &x, const T2 &y) : first(x), second(y) {}
-  template <class U1, class U2>
-  pair(U1 &&x, U2 &&y) : first(x), second(y) {}
-  template <class U1, class U2>
-  explicit pair(const pair<U1, U2> &other) : first(other.first), second(other.second) {}
-  template <class U1, class U2>
-  explicit pair(pair<U1, U2> &&other) : first(other.first), second(other.second) {}
-};
+
 }  // namespace CrazyDave
 #endif  // BPT_PRO_UTILS_H

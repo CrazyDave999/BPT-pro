@@ -77,7 +77,7 @@ auto B_PLUS_TREE_INTERNAL_PAGE_TYPE::LowerBoundByFirst(const KeyType &key, const
   int r = GetSize();
   while (l < r) {
     int mid = (l + r) >> 1;
-    if (cmp(array_[mid].first.GetFirst(), key.GetFirst()) == -1) {
+    if (cmp(array_[mid].first.first, key.first) == -1) {
       l = mid + 1;
     } else {
       r = mid;
@@ -91,7 +91,7 @@ auto B_PLUS_TREE_INTERNAL_PAGE_TYPE::UpperBoundByFirst(const KeyType &key, const
   int r = GetSize();
   while (l < r) {
     int mid = (l + r) >> 1;
-    if (cmp(key.GetFirst(), array_[mid].first.GetFirst()) == -1) {
+    if (cmp(key.first, array_[mid].first.first) == -1) {
       r = mid;
     } else {
       l = mid + 1;

@@ -1,25 +1,15 @@
-//===----------------------------------------------------------------------===//
-//
-//                         CMU-DB Project (15-445/645)
-//                         ***DO NO SHARE PUBLICLY***
-//
-// Identification: src/include/page/b_plus_tree_page.h
-//
-// Copyright (c) 2018, Carnegie Mellon University Database Group
-//
-//===----------------------------------------------------------------------===//
 #pragma once
 
-#include <cassert>
 #include <climits>
 #include <cstdlib>
 #include <string>
 
 #include "buffer/buffer_pool_manager.h"
+#include "common/utils.h"
 
 namespace CrazyDave {
 
-#define MappingType std::pair<KeyType, ValueType>
+#define MappingType pair<KeyType, ValueType>
 
 #define INDEX_TEMPLATE_ARGUMENTS template <typename KeyType, typename ValueType, typename KeyComparator>
 

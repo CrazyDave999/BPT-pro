@@ -3,10 +3,11 @@
 #include "common/utils.h"
 #include "storage/disk/my_disk_manager.h"
 #include "storage/index/b_plus_tree.h"
+#include "data_structures/vector.h"
 
 auto main() -> int {
   auto *disk_manager = new CrazyDave::MyDiskManager;
-  auto *bpm = new CrazyDave::BufferPoolManager(50, disk_manager, 5);
+  auto *bpm = new CrazyDave::BufferPoolManager(5000, disk_manager, 50);
   CrazyDave::Comparator comparator;
   CrazyDave::BPlusTree<CrazyDave::key_t, CrazyDave::page_id_t, CrazyDave::Comparator> bpt("my_bpt", 0, bpm, comparator);
   std::ios::sync_with_stdio(false);
@@ -24,10 +25,10 @@ auto main() -> int {
       bpt.Remove({index, value});
     } else {
       std::cin >> index;
-      std::vector<CrazyDave::key_t> res;
+      CrazyDave::vector<CrazyDave::key_t> res;
       bpt.Find({index, 0}, &res);
       for (auto x : res) {
-        std::cout << x.GetSecond() << ' ';
+        std::cout << x.second << ' ';
       }
       if (res.empty()) {
         std::cout << "null";

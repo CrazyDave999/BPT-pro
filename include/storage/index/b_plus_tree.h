@@ -1,13 +1,8 @@
 #pragma once
-#include <algorithm>
-#include <deque>
 #include <iostream>
 #include <optional>
-#include <queue>
 #include <shared_mutex>
 #include <string>
-#include <utility>
-#include <vector>
 
 #include "common/config.h"
 #include "common/utils.h"
@@ -16,6 +11,8 @@
 #include "storage/page/b_plus_tree_internal_page.h"
 #include "storage/page/b_plus_tree_leaf_page.h"
 #include "storage/page/page_guard.h"
+#include "data_structures/vector.h"
+#include "data_structures/list.h"
 
 namespace CrazyDave {
 
@@ -37,13 +34,13 @@ class Context {
   page_id_t root_page_id_{INVALID_PAGE_ID};
 
   // Store the write guards of the pages that you're modifying here.
-  std::deque<WritePageGuard> write_set_;
+  std::list<WritePageGuard> write_set_;
 
   // You may want to use this when getting value, but not necessary.
-  std::deque<ReadPageGuard> read_set_;
+  std::list<ReadPageGuard> read_set_;
 
   // Record the index of key in the path.
-  std::deque<int> index_set_;
+  list<int> index_set_;
 
   auto IsRootPage(page_id_t page_id) -> bool { return page_id == root_page_id_; }
 };
@@ -72,7 +69,7 @@ class BPlusTree {
   void Remove(const KeyType &key);
 
   // Return the value associated with a given key
-  void Find(const KeyType &key, std::vector<KeyType> *result);
+  void Find(const KeyType &key, vector<KeyType> *result);
 
   // Return the page id of the root node
   auto GetRootPageId() -> page_id_t;
@@ -104,33 +101,32 @@ class BPlusTree {
 
   auto SplitInternalPage(InternalPage *page, page_id_t *n_page_id, Context &ctx) -> InternalPage *;
 
-  void RemoveKeyValue(LeafPage *page, const KeyType &key) const;
+  void RemoveKeyValue(LeafPage *page, const KeyType &key);
 
-  auto TryAdoptFromNeighbor(LeafPage *page, Context &ctx) const -> bool;
+  auto TryAdoptFromNeighbor(LeafPage *page, Context &ctx) -> bool;
 
-  void MergeLeafPage(LeafPage *page, Context &ctx) const;
+  void MergeLeafPage(LeafPage *page, Context &ctx);
 
-  auto TryAdoptFromNeighbor(InternalPage *page, Context &ctx) const -> bool;
+  auto TryAdoptFromNeighbor(InternalPage *page, Context &ctx) -> bool;
 
-  void MergeInternalPage(InternalPage *page, Context &ctx) const;
-
-  /**
-   * @return whether insert successfully and if false, whether it is because leaf node unsafe.
-   */
-  auto Insert(const KeyType &key, const ValueType &value, Protocol protocol) -> std::pair<bool, bool>;
+  void MergeInternalPage(InternalPage *page, Context &ctx);
 
   /**
    * @return whether insert successfully and if false, whether it is because leaf node unsafe.
    */
-  auto Remove(const KeyType &key, Protocol protocol) -> std::pair<bool, bool>;
+  auto Insert(const KeyType &key, const ValueType &value, Protocol protocol) -> pair<bool, bool>;
 
-  void Find(const KeyType &key, std::vector<KeyType> *result, ReadPageGuard &guard);
+  /**
+   * @return whether insert successfully and if false, whether it is because leaf node unsafe.
+   */
+  auto Remove(const KeyType &key, Protocol protocol) -> pair<bool, bool>;
+
+  void Find(const KeyType &key, vector<KeyType> *result, ReadPageGuard &guard);
 
   // member variable
   std::string index_name_;
   BufferPoolManager *bpm_;
   KeyComparator comparator_;
-  std::vector<std::string> log;  // NOLINT
   int leaf_max_size_;
   int internal_max_size_;
   page_id_t header_page_id_;

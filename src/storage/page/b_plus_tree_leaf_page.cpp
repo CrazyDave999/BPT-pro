@@ -63,11 +63,11 @@ INDEX_TEMPLATE_ARGUMENTS
 auto B_PLUS_TREE_LEAF_PAGE_TYPE::PairAt(int index) const -> const MappingType & { return array_[index]; }
 
 INDEX_TEMPLATE_ARGUMENTS
-void B_PLUS_TREE_LEAF_PAGE_TYPE::InsertAt(int index, const MappingType &pair) {
+void B_PLUS_TREE_LEAF_PAGE_TYPE::InsertAt(int index, const MappingType &_pair) {
   for (int i = GetSize(); i > index; --i) {
     array_[i] = array_[i - 1];
   }
-  array_[index] = pair;
+  array_[index] = _pair;
   IncreaseSize(1);
 }
 
@@ -77,7 +77,7 @@ auto B_PLUS_TREE_LEAF_PAGE_TYPE::LowerBoundByFirst(const KeyType &key, const Key
   int r = GetSize();
   while (l < r) {
     int mid = (l + r) >> 1;
-    if (cmp(array_[mid].first.GetFirst(), key.GetFirst()) == -1) {
+    if (cmp(array_[mid].first.first, key.first) == -1) {
       l = mid + 1;
     } else {
       r = mid;
@@ -92,7 +92,7 @@ auto B_PLUS_TREE_LEAF_PAGE_TYPE::UpperBoundByFirst(const KeyType &key, const Key
   int r = GetSize();
   while (l < r) {
     int mid = (l + r) >> 1;
-    if (cmp(key.GetFirst(), array_[mid].first.GetFirst()) == -1) {
+    if (cmp(key.first, array_[mid].first.first) == -1) {
       r = mid;
     } else {
       l = mid + 1;

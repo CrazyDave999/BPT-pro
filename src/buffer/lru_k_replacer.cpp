@@ -5,7 +5,7 @@ namespace CrazyDave {
 LRUKReplacer::LRUKReplacer(size_t num_frames, size_t k) : replacer_size_(num_frames), k_(k) {}
 
 auto LRUKReplacer::Evict(frame_id_t *frame_id) -> bool {
-  latch_.lock();
+  // latch_.lock();
   size_t max_diff = 0;
   auto victim_it = node_store_.end();
   for (auto it = node_store_.begin(); it != node_store_.end(); ++it) {
@@ -28,18 +28,18 @@ auto LRUKReplacer::Evict(frame_id_t *frame_id) -> bool {
     }
   }
   if (victim_it == node_store_.end()) {
-    latch_.unlock();
+    // latch_.unlock();
     return false;
   }
   *frame_id = victim_it->second.fid_;
   --curr_size_;
   node_store_.erase(victim_it);
-  latch_.unlock();
+  // latch_.unlock();
   return true;
 }
 
 void LRUKReplacer::RecordAccess(frame_id_t frame_id) {
-  latch_.lock();
+  // latch_.lock();
   auto &node = node_store_[frame_id];
   if (node.history_.empty()) {
     node.fid_ = frame_id;
@@ -50,11 +50,11 @@ void LRUKReplacer::RecordAccess(frame_id_t frame_id) {
     node.history_.pop_front();
   }
   ++current_timestamp_;
-  latch_.unlock();
+  // latch_.unlock();
 }
 
 void LRUKReplacer::SetEvictable(frame_id_t frame_id, bool set_evictable) {
-  latch_.lock();
+  // latch_.lock();
   auto it = node_store_.find(frame_id);
   if (it->second.is_evictable_ ^ set_evictable) {
     if (set_evictable) {
@@ -64,25 +64,25 @@ void LRUKReplacer::SetEvictable(frame_id_t frame_id, bool set_evictable) {
     }
   }
   it->second.is_evictable_ = set_evictable;
-  latch_.unlock();
+  // latch_.unlock();
 }
 
 void LRUKReplacer::Remove(frame_id_t frame_id) {
-  latch_.lock();
+  // latch_.lock();
   auto it = node_store_.find(frame_id);
   if (it == node_store_.end()) {
-    latch_.unlock();
+    // latch_.unlock();
     return;
   }
   node_store_.erase(it);
   --curr_size_;
-  latch_.unlock();
+  // latch_.unlock();
 }
 
 auto LRUKReplacer::Size() -> size_t {
-  latch_.lock();
+  // latch_.lock();
   auto res = curr_size_;
-  latch_.unlock();
+  // latch_.unlock();
   return res;
 }
 
