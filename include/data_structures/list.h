@@ -14,7 +14,8 @@ class list {
       next = prev = nullptr;
       data = nullptr;
     }
-    node(const T &D, node *N = nullptr, node *P = nullptr) : next(N), prev(P) { data = new T(D); }
+    explicit node(T &&D, node *N = nullptr, node *P = nullptr) : next(N), prev(P) { data = new T(std::move(D)); }
+    explicit node(T &D, node *N = nullptr, node *P = nullptr) : next(N), prev(P) { data = new T(std::move(D)); }
     ~node() { delete data; };
   };
 
@@ -149,8 +150,8 @@ class list {
     currentSize = other.currentSize;
     return *this;
   }
-  const T &front() const { return *(head->next->data); }
-  const T &back() const { return *(tail->prev->data); }
+  T &front() const { return *(head->next->data); }
+  T &back() const { return *(tail->prev->data); }
   iterator begin() {
     iterator itr(head->next);
     return itr;
@@ -176,7 +177,14 @@ class list {
     }
   }
 
-  virtual iterator insert(iterator pos, const T &value) {
+  virtual iterator insert(iterator pos, T &value) {
+    node *tmp = new node(value, pos.ptr, pos.ptr->prev);
+    pos.ptr->prev = pos.ptr->prev->next = tmp;
+    ++currentSize;
+    pos.ptr = tmp;
+    return pos;
+  }
+  virtual iterator insert(iterator pos, T &&value) {
     node *tmp = new node(value, pos.ptr, pos.ptr->prev);
     pos.ptr->prev = pos.ptr->prev->next = tmp;
     ++currentSize;
@@ -192,8 +200,14 @@ class list {
     --currentSize;
     return pos;
   }
-  void push_back(const T &value) {
+  void push_back(T &value) {
     node *tmp = new node(value, tail, tail->prev);
+    tail->prev->next = tmp;
+    tail->prev = tmp;
+    ++currentSize;
+  }
+  void push_back(T &&value) {
+    node *tmp = new node(std::move(value), tail, tail->prev);
     tail->prev->next = tmp;
     tail->prev = tmp;
     ++currentSize;
@@ -205,7 +219,7 @@ class list {
     delete tmp;
     --currentSize;
   }
-  void push_front(const T &value) {
+  void push_front(T &value) {
     node *tmp = new node(value, head->next, head);
     head->next->prev = tmp;
     head->next = tmp;

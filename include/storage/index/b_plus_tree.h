@@ -34,10 +34,10 @@ class Context {
   page_id_t root_page_id_{INVALID_PAGE_ID};
 
   // Store the write guards of the pages that you're modifying here.
-  std::list<WritePageGuard> write_set_;
+  list<WritePageGuard> write_set_;
 
   // You may want to use this when getting value, but not necessary.
-  std::list<ReadPageGuard> read_set_;
+  list<ReadPageGuard> read_set_;
 
   // Record the index of key in the path.
   list<int> index_set_;
