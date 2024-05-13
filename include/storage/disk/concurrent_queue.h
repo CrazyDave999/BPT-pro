@@ -1,5 +1,3 @@
-#pragma clang diagnostic push
-#pragma ide diagnostic ignored "readability-identifier-naming"
 #ifndef BPT_PRO_CONCURRENT_LIST_H
 #define BPT_PRO_CONCURRENT_LIST_H
 #include <atomic>
@@ -67,4 +65,3 @@ class ConcurrentQueue {
 };
 }  // namespace CrazyDave
 #endif  // BPT_PRO_CONCURRENT_LIST_H
-#pragma clang diagnostic pop

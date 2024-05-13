@@ -13,7 +13,7 @@ class String {
   String(const char *s) { strcpy(str_, s); }
   String(const std::string &s) { strcpy(str_, s.c_str()); }
   explicit operator const char *() { return str_; }
-  operator const std::string() { return std::move(std::string(str_)); }
+  operator std::string() { return std::string(str_); }
   const char *c_str() { return str_; }
   auto operator[](int pos) -> char & { return str_[pos]; }
   auto operator=(const String &rhs) -> String & {
