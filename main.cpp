@@ -7,7 +7,7 @@
 
 auto main() -> int {
   auto *disk_manager = new CrazyDave::MyDiskManager;
-  auto *bpm = new CrazyDave::BufferPoolManager(5000, disk_manager, 30);
+  auto *bpm = new CrazyDave::BufferPoolManager(4000, disk_manager, 30);
   CrazyDave::Comparator comparator;
   CrazyDave::BPlusTree<CrazyDave::key_t, CrazyDave::page_id_t, CrazyDave::Comparator> bpt("my_bpt", 0, bpm, comparator);
   std::ios::sync_with_stdio(false);
