@@ -9,7 +9,7 @@
 #include "concurrent_queue.h"
 #include "file_wrapper.h"
 namespace CrazyDave {
-const int QUEUE_CAPACITY = 8000;
+
 class MyDiskManager {
  public:
   explicit MyDiskManager() {

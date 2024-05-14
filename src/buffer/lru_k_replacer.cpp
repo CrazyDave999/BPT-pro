@@ -45,7 +45,7 @@ void LRUKReplacer::RecordAccess(frame_id_t frame_id) {
     node.fid_ = frame_id;
     node.k_ = k_;
   }
-  node.history_.emplace_back(current_timestamp_);
+  node.history_.push_back(current_timestamp_);
   if (node.history_.size() > k_) {
     node.history_.pop_front();
   }

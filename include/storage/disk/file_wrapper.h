@@ -33,7 +33,7 @@ class MyFile {
 
   void Read(char *data, int size) {
     fs_.read(data, size);
-    if(!fs_.good()){
+    if (!fs_.good()) {
       fs_.clear();
     }
   }

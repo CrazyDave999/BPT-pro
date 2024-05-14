@@ -1,13 +1,9 @@
 #pragma once
-
-#include <limits>
-#include <list>
-#include <mutex>  // NOLINT
-#include <unordered_map>
-#include <vector>
+// #include <mutex>  // NOLINT
 
 #include "common/config.h"
-
+#include "data_structures/linked_hashmap.h"
+#include "data_structures/list.h"
 namespace CrazyDave {
 
 class LRUKReplacer;
@@ -19,7 +15,7 @@ class LRUKNode {
   /** History of last seen K timestamps of this page. Least recent timestamp stored in front. */
   // Remove maybe_unused if you start using them. Feel free to change the member variables as you want.
 
-  std::list<size_t> history_;
+  list<size_t> history_;
   size_t k_;
   frame_id_t fid_;
   bool is_evictable_{false};
@@ -46,7 +42,6 @@ class LRUKReplacer {
    * @param num_frames the maximum number of frames the LRUReplacer will be required to store
    */
   explicit LRUKReplacer(size_t num_frames, size_t k);
-
 
   /**
    * TODO(P1): Add implementation
@@ -136,12 +131,12 @@ class LRUKReplacer {
   auto Size() -> size_t;
 
  private:
-  std::unordered_map<frame_id_t, LRUKNode> node_store_;
+  linked_hashmap<frame_id_t, LRUKNode> node_store_;
   size_t current_timestamp_{0};
   size_t curr_size_{0};
-  size_t replacer_size_;
+  [[maybe_unused]] size_t replacer_size_;
   size_t k_;
-  std::mutex latch_;
+  //  std::mutex latch_;
   const size_t inf_ = -1;
 };
 
