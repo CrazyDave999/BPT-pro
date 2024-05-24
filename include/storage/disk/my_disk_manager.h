@@ -66,8 +66,8 @@ class MyDiskManager {
   auto IsNew() -> bool { return garbage_file->IsNew(); }
 
  private:
-  MyFile *data_file_{};
-  MyFile *garbage_file{};  // 第一位size_，第二位max_page_id_
+  MyFile *data_file_{nullptr};
+  MyFile *garbage_file{nullptr};  // 第一位size_，第二位max_page_id_
 
   list<page_id_t> queue_{};
   page_id_t max_page_id_{0};

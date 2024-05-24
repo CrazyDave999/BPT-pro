@@ -12,12 +12,13 @@ auto main() -> int {
                        CrazyDave::Comparator<CrazyDave::String<65>, int, int>>
       bpt("my_bpt", 0, 3000, 30);
 
-  //  auto y = std::freopen("../Bpt_data/3.in", "r", stdin);
+  //  auto y = std::freopen("../Bpt_data/11.in", "r", stdin);
   //  y = std::freopen("../output.txt", "w", stdout);
   std::ios::sync_with_stdio(false);
   int n;
   std::cin >> n;
   while (n--) {
+    bool flag = n == 3949;
     CrazyDave::String<65> op, index;
     int value;
     std::cin >> op;

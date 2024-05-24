@@ -25,7 +25,6 @@ BufferPoolManager::~BufferPoolManager() {
 
 auto BufferPoolManager::NewPage(page_id_t *page_id) -> Page * {
   frame_id_t fid;
-  // latch_.lock();
   if (!free_list_.empty()) {
     fid = free_list_.front();
     free_list_.pop_front();
@@ -37,7 +36,6 @@ auto BufferPoolManager::NewPage(page_id_t *page_id) -> Page * {
       }
       page_table_.erase(page_table_.find(pages_[fid].page_id_));
     } else {
-      // latch_.unlock();
       return nullptr;
     }
   }
@@ -55,7 +53,6 @@ auto BufferPoolManager::NewPage(page_id_t *page_id) -> Page * {
 }
 
 auto BufferPoolManager::FetchPage(page_id_t page_id) -> Page * {
-  // latch_.lock();
   auto it = page_table_.find(page_id);
   if (it != page_table_.end()) {
     auto fid = it->second;
@@ -63,7 +60,6 @@ auto BufferPoolManager::FetchPage(page_id_t page_id) -> Page * {
     ++frame.pin_count_;
     replacer_->RecordAccess(fid);
     replacer_->SetEvictable(fid, false);
-    // latch_.unlock();
     return &frame;
   }
   // Not found in buffer pool. Read from the disk.
@@ -79,7 +75,6 @@ auto BufferPoolManager::FetchPage(page_id_t page_id) -> Page * {
       }
       page_table_.erase(it);
     } else {
-      // latch_.unlock();
       return nullptr;
     }
   }
@@ -88,20 +83,17 @@ auto BufferPoolManager::FetchPage(page_id_t page_id) -> Page * {
   frame.page_id_ = page_id;
   frame.pin_count_ = 1;
   frame.is_dirty_ = false;
-  //  frame.ResetMemory();
+
   page_table_[page_id] = fid;
   disk_manager_->ReadPage(page_id, frame.GetData());
   replacer_->RecordAccess(fid);
   replacer_->SetEvictable(fid, false);
-  // latch_.unlock();
   return &frame;
 }
 
 auto BufferPoolManager::UnpinPage(page_id_t page_id, bool is_dirty) -> bool {
-  // latch_.lock();
   auto it = page_table_.find(page_id);
   if (it == page_table_.end() || pages_[it->second].pin_count_ == 0) {
-    // latch_.unlock();
     return false;
   }
   auto fid = it->second;
@@ -113,7 +105,6 @@ auto BufferPoolManager::UnpinPage(page_id_t page_id, bool is_dirty) -> bool {
   if (is_dirty) {
     frame.is_dirty_ = true;
   }
-  // latch_.unlock();
   return true;
 }
 
@@ -121,17 +112,14 @@ auto BufferPoolManager::FlushPage(page_id_t page_id) -> bool {
   if (page_id == INVALID_PAGE_ID) {
     return false;
   }
-  // latch_.lock();
   auto it = page_table_.find(page_id);
   if (it == page_table_.end()) {
-    // latch_.unlock();
     return false;
   }
   auto fid = it->second;
   auto &frame = pages_[fid];
   disk_manager_->WritePage(page_id, frame.GetData());
   frame.is_dirty_ = false;
-  // latch_.unlock();
   return true;
 }
 
@@ -145,16 +133,13 @@ auto BufferPoolManager::DeletePage(page_id_t page_id) -> bool {
   if (page_id == INVALID_PAGE_ID) {
     return false;
   }
-  // latch_.lock();
   auto it = page_table_.find(page_id);
   if (it == page_table_.end()) {
-    // latch_.unlock();
     return true;
   }
   auto fid = it->second;
   auto &frame = pages_[fid];
   if (frame.GetPinCount() > 0) {
-    // latch_.unlock();
     return false;
   }
   if (frame.IsDirty()) {
@@ -177,17 +162,11 @@ auto BufferPoolManager::FetchPageBasic(page_id_t page_id) -> BasicPageGuard { re
 
 auto BufferPoolManager::FetchPageRead(page_id_t page_id) -> ReadPageGuard {
   Page *page = FetchPage(page_id);
-  if (page != nullptr) {
-    //    page->RLatch();
-  }
   return {this, page};
 }
 
 auto BufferPoolManager::FetchPageWrite(page_id_t page_id) -> WritePageGuard {
   Page *page = FetchPage(page_id);
-  if (page != nullptr) {
-    //    page->WLatch();
-  }
   return {this, page};
 }
 

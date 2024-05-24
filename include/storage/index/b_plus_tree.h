@@ -3,6 +3,7 @@
 #include <optional>
 #include <shared_mutex>
 #include <string>
+#include <utility>
 
 #include "common/config.h"
 #include "common/utils.h"
@@ -42,7 +43,7 @@ class Context {
   // Record the index of key in the path.
   list<int> index_set_;
 
-  auto IsRootPage(page_id_t page_id) const -> bool { return page_id == root_page_id_; }
+  [[nodiscard]] auto IsRootPage(page_id_t page_id) const -> bool { return page_id == root_page_id_; }
 };
 
 #define BPLUSTREE_TYPE BPlusTree<KeyType, ValueType, KeyComparator>
@@ -55,7 +56,7 @@ class BPlusTree {
   enum class Protocol { Optimistic, Pessimistic };
 
  public:
-  explicit BPlusTree(const std::string &name, page_id_t header_page_id, size_t pool_size, size_t replacer_k,
+  explicit BPlusTree(std::string name, page_id_t header_page_id, size_t pool_size, size_t replacer_k,
                      int leaf_max_size = LEAF_PAGE_SIZE, int internal_max_size = INTERNAL_PAGE_SIZE)
       : index_name_(std::move(name)),
         leaf_max_size_(leaf_max_size),
@@ -74,7 +75,7 @@ class BPlusTree {
   ~BPlusTree() { delete bpm_; }
 
   // Returns true if this B+ tree has no keys and values.
-  auto IsEmpty() const -> bool {
+  [[nodiscard]] auto IsEmpty() const -> bool {
     auto guard = bpm_->FetchPageRead(header_page_id_);
     auto root_page = guard.As<BPlusTreeHeaderPage>();
     return root_page->root_page_id_ == INVALID_PAGE_ID;

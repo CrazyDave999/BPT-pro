@@ -19,10 +19,15 @@ class Page {
 
  public:
   /** Constructor. Zeros out the page data. */
-  Page() = default;
+  Page() {
+    //    data_ = new char[BUSTUB_PAGE_SIZE]{};
+    //    ResetMemory();
+  }
 
   /** Default destructor. */
-  ~Page() = default;
+  ~Page() {
+    //    delete[] data_;
+  }
 
   /** @return the actual data contained within this page */
   inline auto GetData() -> char * { return data_; }
@@ -31,10 +36,22 @@ class Page {
   inline auto GetPageId() const -> page_id_t { return page_id_; }
 
   /** @return the pin count of this page */
-  [[nodiscard]] inline auto GetPinCount() const -> int { return pin_count_; }
+  inline auto GetPinCount() const -> int { return pin_count_; }
 
   /** @return true if the page in memory has been modified from the page on disk, false otherwise */
-  [[nodiscard]] inline auto IsDirty() const -> bool { return is_dirty_; }
+  inline auto IsDirty() const -> bool { return is_dirty_; }
+
+  /** Acquire the page write latch. */
+  inline void WLatch() { rwlatch_.WLock(); }
+
+  /** Release the page write latch. */
+  inline void WUnlatch() { rwlatch_.WUnlock(); }
+
+  /** Acquire the page read latch. */
+  inline void RLatch() { rwlatch_.RLock(); }
+
+  /** Release the page read latch. */
+  inline void RUnlatch() { rwlatch_.RUnlock(); }
 
  protected:
   static_assert(sizeof(page_id_t) == 4);
@@ -53,6 +70,8 @@ class Page {
   int pin_count_ = 0;
   /** True if the page is dirty, i.e. it is different from its corresponding page on disk. */
   bool is_dirty_ = false;
+  /** Page latch. */
+  ReaderWriterLatch rwlatch_;
 };
 
 }  // namespace CrazyDave

@@ -59,9 +59,9 @@ class BasicPageGuard {
    */
   ~BasicPageGuard();
 
-  auto PageId() const -> page_id_t { return page_->GetPageId(); }
+  [[nodiscard]] auto PageId() const -> page_id_t { return page_->GetPageId(); }
 
-  auto GetData() const -> char * { return page_->GetData(); }
+  [[nodiscard]] auto GetData() const -> char * { return page_->GetData(); }
 
   template <class T>
   auto As() const -> const T * {
@@ -193,9 +193,9 @@ class WritePageGuard {
    */
   ~WritePageGuard();
 
-  auto PageId() const -> page_id_t { return guard_.PageId(); }
+  [[nodiscard]] auto PageId() const -> page_id_t { return guard_.PageId(); }
 
-  auto GetData() const -> const char * { return guard_.GetData(); }
+  [[nodiscard]] auto GetData() const -> const char * { return guard_.GetData(); }
 
   template <class T>
   auto As() const -> const T * {
