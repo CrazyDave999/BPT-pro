@@ -14,8 +14,8 @@ auto main() -> int {
   //                       CrazyDave::Comparator<CrazyDave::String<65>, int, int>>
   //      bpt("my_bpt", 0, bpm);
 
-        auto y = std::freopen("../Bpt_data/1.in", "r", stdin);
-        y = std::freopen("../output.txt", "w", stdout);
+  //        auto y = std::freopen("../Bpt_data/1.in", "r", stdin);
+  //        y = std::freopen("../output.txt", "w", stdout);
   std::ios::sync_with_stdio(false);
   int n;
   std::cin >> n;
