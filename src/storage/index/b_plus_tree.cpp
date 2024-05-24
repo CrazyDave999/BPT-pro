@@ -695,6 +695,6 @@ auto BPLUSTREE_TYPE::Remove(const KeyType &key, BPlusTree::Protocol protocol) ->
   return {false, true};
 }
 // template class BPlusTree<key_t, page_id_t, Comparator>;
-template class BPlusTree<pair<size_t, int>, int, Comparator<size_t, int, int>>;
+template class BPlusTree<pair<uint64_t , int>, int, Comparator<uint64_t , int, int>>;
 template class BPlusTree<pair<String<65>, int>, int, Comparator<String<65>, int, int>>;
 }  // namespace CrazyDave

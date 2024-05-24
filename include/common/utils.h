@@ -37,9 +37,9 @@ class String {
   friend auto operator>>(std::istream &is, String &rhs) -> std::istream & { return is >> rhs.str_; }
   friend auto operator<<(std::ostream &os, const String &rhs) -> std::ostream & { return os << rhs.str_; }
 };
-static inline auto HashBytes(const char *bytes) -> size_t {
-  size_t L = strlen(bytes);
-  size_t hash = L;
+static inline auto HashBytes(const char *bytes) -> uint64_t {
+  uint64_t L = strlen(bytes);
+  uint64_t hash = L;
   for (size_t i = 0; i < L; ++i) {
     hash = ((hash << 5) ^ (hash >> 27)) ^ bytes[i];
   }
