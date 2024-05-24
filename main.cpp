@@ -10,7 +10,7 @@ auto main() -> int {
   //                                                                                                           30);
   CrazyDave::BPlusTree<CrazyDave::pair<CrazyDave::String<65>, int>, int,
                        CrazyDave::Comparator<CrazyDave::String<65>, int, int>>
-      bpt("my_bpt", 0, 3000, 30);
+      bpt("my_bpt", 0, 5000, 30);
 
   //  auto y = std::freopen("../Bpt_data/11.in", "r", stdin);
   //  y = std::freopen("../output.txt", "w", stdout);
