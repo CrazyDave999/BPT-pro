@@ -33,45 +33,98 @@ class BPlusTreeInternalPage : public BPlusTreePage {
    * the creation of a new page to make a valid BPlusTreeInternalPage
    * @param max_size Maximal size of the page
    */
-  void Init(int max_size = INTERNAL_PAGE_SIZE - 1);
+  void Init(int max_size = INTERNAL_PAGE_SIZE - 1){
+    SetPageType(IndexPageType::INTERNAL_PAGE);
+    SetSize(0);
+    SetMaxSize(max_size);
+  }
 
   /**
    * @param index The index of the key to get. Index must be non-zero.
    * @return Key at index
    */
-  auto KeyAt(int index) const -> KeyType;
+  auto KeyAt(int index) const -> KeyType{ return array_[index].first; }
 
   /**
    *
    * @param index The index of the key to set. Index must be non-zero.
    * @param key The new value for key
    */
-  void SetKeyAt(int index, const KeyType &key);
+  void SetKeyAt(int index, const KeyType &key){ array_[index].first = key; }
 
   /**
    *
    * @param value the value to search for
    */
-  auto ValueIndex(const ValueType &value) const -> int;
+  auto ValueIndex(const ValueType &value) const -> int{
+    for (int i = 0; i < GetSize(); ++i) {
+      if (array_[i].second == value) {
+        return i;
+      }
+    }
+    return -1;
+  }
 
   /**
    *
    * @param index the index
    * @return the value at the index
    */
-  auto ValueAt(int index) const -> ValueType;
+  auto ValueAt(int index) const -> ValueType{ return array_[index].second; }
 
-  void InsertAt(int index, const KeyType &key, const ValueType &value);
+  void InsertAt(int index, const KeyType &key, const ValueType &value){
+    for (int i = GetSize(); i > index; --i) {
+      array_[i] = array_[i - 1];
+    }
+    array_[index].first = key;
+    array_[index].second = value;
+    IncreaseSize(1);
+  }
 
-  void RemoveAt(int index);
+  void RemoveAt(int index){
+    for (int i = index; i < GetSize() - 1; ++i) {
+      array_[i] = array_[i + 1];
+    }
+    IncreaseSize(-1);
+  }
 
-  auto PairAt(int index) const -> const MappingType &;
+  auto PairAt(int index) const -> const MappingType &{ return array_[index]; }
 
-  void InsertAt(int index, const MappingType &pair);
+  void InsertAt(int index, const MappingType &pair) {
+    for (int i = GetSize(); i > index; --i) {
+      array_[i] = array_[i - 1];
+    }
+    array_[index] = pair;
+    IncreaseSize(1);
+  }
 
-  auto LowerBoundByFirst(const KeyType &key, const KeyComparator &cmp) const -> int;
+  auto LowerBoundByFirst(const KeyType &key, const KeyComparator &cmp) const -> int{
+    int l = 1;
+    int r = GetSize();
+    while (l < r) {
+      int mid = (l + r) >> 1;
+      if (cmp(array_[mid].first.first, key.first) == -1) {
+        l = mid + 1;
+      } else {
+        r = mid;
+      }
+    }
+    return l;
+  }
 
-  auto UpperBoundByFirst(const KeyType &key, const KeyComparator &cmp) const -> int;
+  auto UpperBoundByFirst(const KeyType &key, const KeyComparator &cmp) const -> int {
+    int l = 1;
+    int r = GetSize();
+    while (l < r) {
+      int mid = (l + r) >> 1;
+      if (cmp(key.first, array_[mid].first.first) == -1) {
+        r = mid;
+      } else {
+        l = mid + 1;
+      }
+    }
+    return l;
+  }
 
  private:
   // Flexible array member for page data.

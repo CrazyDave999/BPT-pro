@@ -48,9 +48,6 @@ auto ReadPageGuard::operator=(ReadPageGuard &&that) noexcept -> ReadPageGuard & 
 }
 
 void ReadPageGuard::Drop() {
-  if (guard_.page_ != nullptr) {
-    //    guard_.page_->RUnlatch();
-  }
   guard_.Drop();
 }
 
@@ -68,9 +65,6 @@ auto WritePageGuard::operator=(WritePageGuard &&that) noexcept -> WritePageGuard
 }
 
 void WritePageGuard::Drop() {
-  if (guard_.page_ != nullptr) {
-    //    guard_.page_->WUnlatch();
-  }
   guard_.Drop();
 }
 

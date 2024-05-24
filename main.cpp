@@ -6,16 +6,14 @@
 #include "storage/index/b_plus_tree.h"
 
 auto main() -> int {
-  auto *disk_manager = new CrazyDave::MyDiskManager;
-  auto *bpm = new CrazyDave::BufferPoolManager(500, disk_manager, 15);
   CrazyDave::BPlusTree<CrazyDave::pair<uint64_t, int>, int, CrazyDave::Comparator<uint64_t, int, int>> bpt("my_bpt", 0,
-                                                                                                           bpm);
+                                                                                                           500, 15);
   //  CrazyDave::BPlusTree<CrazyDave::pair<CrazyDave::String<65>, int>, int,
   //                       CrazyDave::Comparator<CrazyDave::String<65>, int, int>>
   //      bpt("my_bpt", 0, bpm);
 
-  //        auto y = std::freopen("../Bpt_data/1.in", "r", stdin);
-  //        y = std::freopen("../output.txt", "w", stdout);
+  //  auto y = std::freopen("../Bpt_data/3.in", "r", stdin);
+  //  y = std::freopen("../output.txt", "w", stdout);
   std::ios::sync_with_stdio(false);
   int n;
   std::cin >> n;
@@ -49,7 +47,5 @@ auto main() -> int {
       std::cout << std::endl;
     }
   }
-  delete bpm;
-  delete disk_manager;
   return 0;
 }

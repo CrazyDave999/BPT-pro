@@ -2,11 +2,7 @@
 set(SRC_FILES
         buffer/buffer_pool_manager.cpp
         buffer/lru_k_replacer.cpp
-        storage/index/b_plus_tree.cpp
-        storage/index/index_iterator.cpp
         storage/page/b_plus_tree_page.cpp
-        storage/page/b_plus_tree_leaf_page.cpp
-        storage/page/b_plus_tree_internal_page.cpp
         storage/page/page_guard.cpp
         )
 

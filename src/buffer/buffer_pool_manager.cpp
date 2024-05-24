@@ -3,9 +3,10 @@
 
 namespace CrazyDave {
 
-BufferPoolManager::BufferPoolManager(size_t pool_size, MyDiskManager *disk_manager, size_t replacer_k)
-    : pool_size_(pool_size), disk_manager_(disk_manager) {
+BufferPoolManager::BufferPoolManager(const std::string &name, size_t pool_size, size_t replacer_k)
+    : pool_size_(pool_size) {
   // we allocate a consecutive memory space for the buffer pool
+  disk_manager_ = new MyDiskManager{name};
   pages_ = new Page[pool_size_];
   replacer_ = new LRUKReplacer{pool_size, replacer_k};
 
@@ -19,6 +20,7 @@ BufferPoolManager::~BufferPoolManager() {
   FlushAllPages();
   delete[] pages_;
   delete replacer_;
+  delete disk_manager_;
 }
 
 auto BufferPoolManager::NewPage(page_id_t *page_id) -> Page * {

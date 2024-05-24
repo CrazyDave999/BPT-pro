@@ -23,7 +23,7 @@ class BufferPoolManager {
    * @param replacer_k the lookback constant k for the LRU-K replacer
    * @param log_manager the log manager (for testing only: nullptr = disable logging). Please ignore this for P1.
    */
-  BufferPoolManager(size_t pool_size, MyDiskManager *disk_manager, size_t replacer_k = LRUK_REPLACER_K);
+  BufferPoolManager(const std::string &name,size_t pool_size,  size_t replacer_k = LRUK_REPLACER_K);
 
   /**
    * @brief Destroy an existing BufferPoolManager.
