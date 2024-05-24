@@ -167,7 +167,7 @@ class BufferPoolManager {
   /** Pointer to the disk manager. */
   MyDiskManager *disk_manager_;
   /** Page table for keeping track of buffer pool pages. */
-  linked_hashmap<page_id_t, frame_id_t> page_table_;
+  std::unordered_map<page_id_t, frame_id_t> page_table_;
   /** Replacer to find unpinned pages for replacement. */
   LRUKReplacer *replacer_;
   /** List of free frames that don't have any pages on them. */
