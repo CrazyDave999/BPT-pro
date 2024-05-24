@@ -7,7 +7,7 @@
 
 auto main() -> int {
   auto *disk_manager = new CrazyDave::MyDiskManager;
-  auto *bpm = new CrazyDave::BufferPoolManager(3000, disk_manager, 30);
+  auto *bpm = new CrazyDave::BufferPoolManager(100, disk_manager, 15);
   //  CrazyDave::BPlusTree<CrazyDave::pair<size_t, int>, int, CrazyDave::Comparator<size_t, int, int>> bpt("my_bpt", 0,
   //                                                                                                       bpm);
   CrazyDave::BPlusTree<CrazyDave::pair<CrazyDave::String<65>, int>, int,
