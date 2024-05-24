@@ -131,7 +131,7 @@ class LRUKReplacer {
   auto Size() -> size_t;
 
  private:
-  linked_hashmap<frame_id_t, LRUKNode> node_store_;
+  std::unordered_map<frame_id_t, LRUKNode> node_store_;
   size_t current_timestamp_{0};
   size_t curr_size_{0};
   size_t replacer_size_;
