@@ -7,7 +7,7 @@
 
 auto main() -> int {
   CrazyDave::BPlusTree<CrazyDave::pair<uint64_t, int>, int, CrazyDave::Comparator<uint64_t, int, int>> bpt("my_bpt", 0,
-                                                                                                           500, 15);
+                                                                                                           1000, 15);
   //  CrazyDave::BPlusTree<CrazyDave::pair<CrazyDave::String<65>, int>, int,
   //                       CrazyDave::Comparator<CrazyDave::String<65>, int, int>>
   //      bpt("my_bpt", 0, bpm);
