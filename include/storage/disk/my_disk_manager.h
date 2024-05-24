@@ -67,7 +67,7 @@ class MyDiskManager {
   MyFile garbage_file{"garbage"};  // 第一位size_，第二位max_page_id_
   ConcurrentQueue<page_id_t, QUEUE_CAPACITY> queue_;
   std::atomic<page_id_t> max_page_id_{0};
-  std::mutex io_latch_;
+  //  std::mutex io_latch_;
 };
 }  // namespace CrazyDave
 #endif  // BPT_PRO_DISK_MANAGER_H
