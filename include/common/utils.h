@@ -37,8 +37,15 @@ class String {
   friend auto operator>>(std::istream &is, String &rhs) -> std::istream & { return is >> rhs.str_; }
   friend auto operator<<(std::ostream &os, const String &rhs) -> std::ostream & { return os << rhs.str_; }
 };
+static inline auto HashBytes(const char *bytes) -> size_t {
+  size_t L = strlen(bytes);
+  size_t hash = L;
+  for (size_t i = 0; i < L; ++i) {
+    hash = ((hash << 5) ^ (hash >> 27)) ^ bytes[i];
+  }
+  return hash;
+}
 
-class Comparator;
 template <class T1, class T2>
 class pair {
  public:
@@ -70,11 +77,11 @@ class pair {
   }
 };
 
-using str_t = String<65>;
-using key_t = pair<str_t, page_id_t>;
+template <class KeyFirst,class KeySecond, class ValueType>
 class Comparator {
+  using KeyType = pair<KeyFirst, KeySecond>;
  public:
-  auto operator()(const key_t &k1, const key_t &k2) const -> int {
+  auto operator()(const KeyType &k1, const KeyType &k2) const -> int {
     if (k1 < k2) {
       return -1;
     }
@@ -83,25 +90,16 @@ class Comparator {
     }
     return 0;
   }
-  auto operator()(const str_t &s, const key_t &k) const -> int {
-    if (s < k.first) {
+  auto operator()(const KeyFirst &k1, const KeyFirst &k2) const -> int {
+    if (k1 < k2) {
       return -1;
     }
-    if (k.first < s) {
+    if (k2 < k1) {
       return 1;
     }
     return 0;
   }
-  auto operator()(const key_t &k, const str_t &s) const -> int {
-    if (k.first < s) {
-      return -1;
-    }
-    if (s < k.first) {
-      return 1;
-    }
-    return 0;
-  }
-  auto operator()(const str_t &s1, const str_t &s2) const -> int {
+  auto operator()(const ValueType &s1, const ValueType &s2) const -> int {
     if (s1 < s2) {
       return -1;
     }
@@ -111,6 +109,5 @@ class Comparator {
     return 0;
   }
 };
-
 }  // namespace CrazyDave
 #endif  // BPT_PRO_UTILS_H

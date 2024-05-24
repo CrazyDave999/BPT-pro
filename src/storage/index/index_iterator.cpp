@@ -53,5 +53,6 @@ auto INDEXITERATOR_TYPE::operator++() -> INDEXITERATOR_TYPE & {
   }
   return *this;
 }
-template class IndexIterator<key_t, page_id_t, Comparator>;
+//template class IndexIterator<key_t, page_id_t, Comparator>;
+template class IndexIterator<pair<size_t, int>, int,Comparator<size_t ,int,int>>;
 }  // namespace CrazyDave

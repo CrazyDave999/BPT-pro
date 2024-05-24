@@ -6,10 +6,9 @@ namespace CrazyDave {
 
 INDEX_TEMPLATE_ARGUMENTS
 BPLUSTREE_TYPE::BPlusTree(std::string name, page_id_t header_page_id, BufferPoolManager *buffer_pool_manager,
-                          const KeyComparator &comparator, int leaf_max_size, int internal_max_size)
+                          int leaf_max_size, int internal_max_size)
     : index_name_(std::move(name)),
       bpm_(buffer_pool_manager),
-      comparator_(std::move(comparator)),
       leaf_max_size_(leaf_max_size),
       internal_max_size_(internal_max_size),
       header_page_id_(header_page_id) {
@@ -390,7 +389,7 @@ auto BPLUSTREE_TYPE::TryAdoptFromNeighbor(LeafPage *page, Context &ctx) -> bool 
   return false;
 }
 INDEX_TEMPLATE_ARGUMENTS
-void BPLUSTREE_TYPE::MergeLeafPage(LeafPage *page, Context &ctx)  {
+void BPLUSTREE_TYPE::MergeLeafPage(LeafPage *page, Context &ctx) {
   // 必须先 TryAdoptFromNeighbor，再考虑 MergeLeafPage。领养失败则必定能合并
   //  std::cout << "Merging a page. Type: leaf_page.\n Before: " << page->ToString() << "\n";  // debug
   //  auto *p_page = ctx.write_set_[ctx.write_set_.size() - 2].AsMut<InternalPage>();
@@ -431,7 +430,7 @@ void BPLUSTREE_TYPE::MergeLeafPage(LeafPage *page, Context &ctx)  {
   //  std::cout << "Successfully merged. After merging, l_page: " << l_page->ToString() << "\n";  // debug
 }
 INDEX_TEMPLATE_ARGUMENTS
-auto BPLUSTREE_TYPE::TryAdoptFromNeighbor(InternalPage *page, Context &ctx)-> bool {
+auto BPLUSTREE_TYPE::TryAdoptFromNeighbor(InternalPage *page, Context &ctx) -> bool {
   //  std::cout << "Trying to adopt a child from neighbor. Type: leaf_page\n Before: " << page->ToString()
   //            << "\n";  // debug
   //  auto *p_page = ctx.write_set_[ctx.write_set_.size() - 2].AsMut<InternalPage>();
@@ -513,8 +512,8 @@ void BPLUSTREE_TYPE::MergeInternalPage(InternalPage *page, Context &ctx) {
 }
 
 INDEX_TEMPLATE_ARGUMENTS
-auto BPLUSTREE_TYPE::Insert(const KeyType &key, const ValueType &value, BPlusTree::Protocol protocol)
-    -> pair<bool, bool> {
+auto BPLUSTREE_TYPE::Insert(const KeyType &key, const ValueType &value,
+                            BPlusTree::Protocol protocol) -> pair<bool, bool> {
   Context ctx;
   if (protocol == Protocol::Pessimistic) {
     ctx.header_write_guard_ = bpm_->FetchPageWrite(header_page_id_);
@@ -695,5 +694,6 @@ auto BPLUSTREE_TYPE::Remove(const KeyType &key, BPlusTree::Protocol protocol) ->
   }
   return {false, true};
 }
-template class BPlusTree<key_t, page_id_t, Comparator>;
+// template class BPlusTree<key_t, page_id_t, Comparator>;
+template class BPlusTree<pair<size_t, int>, int,Comparator<size_t ,int,int>>;
 }  // namespace CrazyDave

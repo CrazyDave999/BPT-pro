@@ -283,7 +283,7 @@ class linked_hashmap {
     node *p = array[hs];
     while (p && !equal(p->val->first, key)) p = p->_next;
     if (!p) {
-      T t;
+      T t{};
       value_type v(key, t);
       auto pr = insert(v);
       return pr.first.get_ptr()->val->second;

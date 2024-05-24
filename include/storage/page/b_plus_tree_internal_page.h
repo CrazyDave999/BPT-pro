@@ -20,7 +20,7 @@ namespace CrazyDave {
  * | HEADER | KEY(1)+PAGE_ID(1) | KEY(2)+PAGE_ID(2) | ... | KEY(n)+PAGE_ID(n) |
  *  --------------------------------------------------------------------------
  */
-INDEX_TEMPLATE_ARGUMENTS
+template <typename KeyType, typename ValueType, typename KeyComparator>
 class BPlusTreeInternalPage : public BPlusTreePage {
  public:
   // Deleted to disallow initialization

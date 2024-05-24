@@ -15,9 +15,9 @@ class LRUKNode {
   /** History of last seen K timestamps of this page. Least recent timestamp stored in front. */
   // Remove maybe_unused if you start using them. Feel free to change the member variables as you want.
 
-  list<size_t> history_;
-  size_t k_;
-  frame_id_t fid_;
+  list<size_t> history_{};
+  size_t k_{};
+  frame_id_t fid_{};
   bool is_evictable_{false};
 };
 
@@ -134,7 +134,7 @@ class LRUKReplacer {
   linked_hashmap<frame_id_t, LRUKNode> node_store_;
   size_t current_timestamp_{0};
   size_t curr_size_{0};
-  [[maybe_unused]] size_t replacer_size_;
+  size_t replacer_size_;
   size_t k_;
   //  std::mutex latch_;
   const size_t inf_ = -1;

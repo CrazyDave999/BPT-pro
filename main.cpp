@@ -8,8 +8,7 @@
 auto main() -> int {
   auto *disk_manager = new CrazyDave::MyDiskManager;
   auto *bpm = new CrazyDave::BufferPoolManager(5000, disk_manager, 30);
-  CrazyDave::Comparator comparator;
-  CrazyDave::BPlusTree<CrazyDave::key_t, CrazyDave::page_id_t, CrazyDave::Comparator> bpt("my_bpt", 0, bpm, comparator);
+  CrazyDave::BPlusTree<CrazyDave::pair<size_t ,int>, int, CrazyDave::Comparator<size_t,int,int>> bpt("my_bpt", 0, bpm);
   std::ios::sync_with_stdio(false);
   int n;
   std::cin >> n;
@@ -19,14 +18,17 @@ auto main() -> int {
     std::cin >> op;
     if (op[0] == 'i') {
       std::cin >> index >> value;
-      bpt.Insert({index, value}, 0);
+      auto index_hs=CrazyDave::HashBytes(index.c_str());
+      bpt.Insert({index_hs, value}, 0);
     } else if (op[0] == 'd') {
       std::cin >> index >> value;
-      bpt.Remove({index, value});
+      auto index_hs=CrazyDave::HashBytes(index.c_str());
+      bpt.Remove({index_hs, value});
     } else {
       std::cin >> index;
-      CrazyDave::vector<CrazyDave::key_t> res;
-      bpt.Find({index, 0}, &res);
+      auto index_hs=CrazyDave::HashBytes(index.c_str());
+      CrazyDave::vector<CrazyDave::pair<size_t ,int>> res;
+      bpt.Find({index_hs, 0}, &res);
       for (auto x : res) {
         std::cout << x.second << ' ';
       }

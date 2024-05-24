@@ -100,6 +100,6 @@ auto B_PLUS_TREE_LEAF_PAGE_TYPE::UpperBoundByFirst(const KeyType &key, const Key
   }
   return l;
 }
-template class BPlusTreeLeafPage<key_t, page_id_t, Comparator>;
-
+// template class BPlusTreeLeafPage<key_t, page_id_t, Comparator>;
+template class BPlusTreeLeafPage<pair<size_t, int>, int,Comparator<size_t ,int,int>>;
 }  // namespace CrazyDave

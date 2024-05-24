@@ -2,7 +2,6 @@
 #define SJTU_VECTOR_HPP
 
 #include <memory>
-
 namespace CrazyDave {
 template <typename T>
 class vector {
@@ -15,12 +14,29 @@ class vector {
   void double_space() {
     T *tmp = data;
     data = alloc.allocate(capacity * 2);
-    for (int i = 0; i < currentSize; ++i) {
+    for (int i = 0; i < (int)currentSize; ++i) {
       std::construct_at(data + i, tmp[i]);
       (tmp + i)->~T();
     }
     alloc.deallocate(tmp, capacity);
     capacity <<= 1;
+  }
+  void quick_sort(T *arr, int len, bool cmp(const T &, const T &)) {
+    if (len <= 1) {
+      return;
+    }
+    T pi = arr[rand() % len];
+    int i = 0, j = 0, k = len;
+    while (i < k) {
+      if (cmp(arr[i], pi))
+        std::swap(arr[i++], arr[j++]);
+      else if (cmp(pi, arr[i]))
+        std::swap(arr[i], arr[--k]);
+      else
+        ++i;
+    }
+    quick_sort(arr, j, cmp);
+    quick_sort(arr + k, len - k, cmp);
   }
 
  public:
@@ -68,7 +84,7 @@ class vector {
     const vector<T> *vec;
 
    public:
-    const_iterator(T *ptr = nullptr, const vector<T> *vec = nullptr) : ptr(ptr), vec(vec) {}
+    explicit const_iterator(T *ptr = nullptr, const vector<T> *vec = nullptr) : ptr(ptr), vec(vec) {}
     const_iterator operator++(int) {
       const_iterator tmp = *this;
       ++ptr;
@@ -104,27 +120,27 @@ class vector {
     currentSize = other.currentSize;
     capacity = other.capacity;
     data = alloc.allocate(capacity);
-    for (int i = 0; i < currentSize; ++i) {
+    for (int i = 0; i < (int)currentSize; ++i) {
       std::construct_at(data + i, other.data[i]);
     }
   }
 
   ~vector() {
-    for (int i = 0; i < currentSize; ++i) {
+    for (int i = 0; i < (int)currentSize; ++i) {
       (data + i)->~T();
     }
     alloc.deallocate(data, capacity);
   }
   vector &operator=(const vector &other) {
     if (&other == this) return *this;
-    for (int i = 0; i < currentSize; ++i) {
+    for (int i = 0; i < (int)currentSize; ++i) {
       (data + i)->~T();
     }
     alloc.deallocate(data, capacity);
     currentSize = other.currentSize;
     capacity = other.capacity;
     data = alloc.allocate(capacity);
-    for (int i = 0; i < currentSize; ++i) {
+    for (int i = 0; i < (int)currentSize; ++i) {
       std::construct_at(data + i, other.data[i]);
     }
 
@@ -152,10 +168,10 @@ class vector {
     const_iterator itr(data + currentSize, this);
     return itr;
   }
-  bool empty() const { return currentSize == 0; }
-  size_t size() const { return currentSize; }
+  [[nodiscard]] bool empty() const { return currentSize == 0; }
+  [[nodiscard]] size_t size() const { return currentSize; }
   void clear() {
-    for (int i = 0; i < capacity; ++i) {
+    for (int i = 0; i < (int)capacity; ++i) {
       (data + i)->~T();
     }
     alloc.deallocate(data, capacity);
@@ -205,6 +221,7 @@ class vector {
     (data + currentSize - 1)->~T();
     --currentSize;
   }
+  void sort(bool cmp(const T &, const T &)) { quick_sort(data, currentSize, cmp); }
 };
 }  // namespace CrazyDave
-#endif // SJTU_VECTOR_HPP
+#endif  // SJTU_VECTOR_HPP

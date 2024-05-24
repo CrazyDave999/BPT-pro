@@ -24,7 +24,7 @@ namespace CrazyDave {
  * | PageType (4) | CurrentSize (4) | MaxSize (4) | NextPageId (4) | ... |
  * -----------------------------------------------------------------------
  */
-INDEX_TEMPLATE_ARGUMENTS
+template <typename KeyType, typename ValueType, typename KeyComparator>
 class BPlusTreeLeafPage : public BPlusTreePage {
  public:
   // Delete all constructor / destructor to ensure memory safety
