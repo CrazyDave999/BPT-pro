@@ -7,15 +7,15 @@
 
 auto main() -> int {
   auto *disk_manager = new CrazyDave::MyDiskManager;
-  auto *bpm = new CrazyDave::BufferPoolManager(100, disk_manager, 15);
+  auto *bpm = new CrazyDave::BufferPoolManager(200, disk_manager, 15);
   //  CrazyDave::BPlusTree<CrazyDave::pair<size_t, int>, int, CrazyDave::Comparator<size_t, int, int>> bpt("my_bpt", 0,
   //                                                                                                       bpm);
   CrazyDave::BPlusTree<CrazyDave::pair<CrazyDave::String<65>, int>, int,
                        CrazyDave::Comparator<CrazyDave::String<65>, int, int>>
       bpt("my_bpt", 0, bpm);
 
-//    auto y = std::freopen("../Bpt_data/13.in", "r", stdin);
-//    y = std::freopen("../output.txt", "w", stdout);
+  //    auto y = std::freopen("../Bpt_data/1.in", "r", stdin);
+  //    y = std::freopen("../output.txt", "w", stdout);
   std::ios::sync_with_stdio(false);
   int n;
   std::cin >> n;
