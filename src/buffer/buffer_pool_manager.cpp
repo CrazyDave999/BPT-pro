@@ -41,7 +41,6 @@ auto BufferPoolManager::NewPage(page_id_t *page_id) -> Page * {
   }
   auto pid = disk_manager_->AllocatePage();
   auto &frame = pages_[fid];
-  //  frame.ResetMemory();
   frame.page_id_ = pid;
   frame.pin_count_ = 0;
   frame.is_dirty_ = false;
@@ -50,7 +49,6 @@ auto BufferPoolManager::NewPage(page_id_t *page_id) -> Page * {
   replacer_->RecordAccess(fid);
   replacer_->SetEvictable(fid, false);
   ++pages_[fid].pin_count_;
-  // latch_.unlock();
   return &pages_[fid];
 }
 

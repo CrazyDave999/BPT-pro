@@ -8,10 +8,14 @@
 auto main() -> int {
   auto *disk_manager = new CrazyDave::MyDiskManager;
   auto *bpm = new CrazyDave::BufferPoolManager(3000, disk_manager, 30);
-  CrazyDave::BPlusTree<CrazyDave::pair<size_t, int>, int, CrazyDave::Comparator<size_t, int, int>> bpt("my_bpt", 0,
-                                                                                                       bpm);
-//  auto x = std::freopen("../Bpt_data/2.in", "r", stdin);
-//  x = std::freopen("../output.txt", "w", stdout);
+  //  CrazyDave::BPlusTree<CrazyDave::pair<size_t, int>, int, CrazyDave::Comparator<size_t, int, int>> bpt("my_bpt", 0,
+  //                                                                                                       bpm);
+  CrazyDave::BPlusTree<CrazyDave::pair<CrazyDave::String<65>, int>, int,
+                       CrazyDave::Comparator<CrazyDave::String<65>, int, int>>
+      bpt("my_bpt", 0, bpm);
+
+//    auto y = std::freopen("../Bpt_data/2.in", "r", stdin);
+//    y = std::freopen("../output.txt", "w", stdout);
   std::ios::sync_with_stdio(false);
   int n;
   std::cin >> n;
@@ -21,17 +25,21 @@ auto main() -> int {
     std::cin >> op;
     if (op[0] == 'i') {
       std::cin >> index >> value;
-      auto index_hs = CrazyDave::HashBytes(index.c_str());
-      bpt.Insert({index_hs, value}, 0);
+      //      auto index_hs = CrazyDave::HashBytes(index.c_str());
+      //      bpt.Insert({index_hs, value}, 0);
+      bpt.Insert({index, value}, 0);
     } else if (op[0] == 'd') {
       std::cin >> index >> value;
-      auto index_hs = CrazyDave::HashBytes(index.c_str());
-      bpt.Remove({index_hs, value});
+      //      auto index_hs = CrazyDave::HashBytes(index.c_str());
+      //      bpt.Remove({index_hs, value});
+      bpt.Remove({index, value});
     } else {
       std::cin >> index;
-      auto index_hs = CrazyDave::HashBytes(index.c_str());
-      CrazyDave::vector<CrazyDave::pair<size_t, int>> res;
-      bpt.Find({index_hs, 0}, &res);
+      //      auto index_hs = CrazyDave::HashBytes(index.c_str());
+      //      CrazyDave::vector<CrazyDave::pair<size_t, int>> res;
+      //      bpt.Find({index_hs, 0}, &res);
+      CrazyDave::vector<CrazyDave::pair<CrazyDave::String<65>, int>> res;
+      bpt.Find({index, 0}, &res);
       for (auto x : res) {
         std::cout << x.second << ' ';
       }

@@ -8,7 +8,7 @@ static constexpr int HEADER_PAGE_ID = 0;           // the header page id
 static constexpr int BUSTUB_PAGE_SIZE = 8192;  // size of a data page in byte
 static constexpr int BUFFER_POOL_SIZE = 10;        // size of buffer pool
 static constexpr int LRUK_REPLACER_K = 10;         // lookback window for lru-k replacer
-static constexpr int QUEUE_CAPACITY = 8000;
+
 using frame_id_t = int32_t;  // frame id type
 using page_id_t = int32_t;   // page id type
 }  // namespace CrazyDave

@@ -55,4 +55,5 @@ auto INDEXITERATOR_TYPE::operator++() -> INDEXITERATOR_TYPE & {
 }
 //template class IndexIterator<key_t, page_id_t, Comparator>;
 template class IndexIterator<pair<size_t, int>, int,Comparator<size_t ,int,int>>;
+template class IndexIterator<pair<String<65>, int>, int, Comparator<String<65>, int, int>>;
 }  // namespace CrazyDave

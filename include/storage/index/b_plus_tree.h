@@ -42,7 +42,7 @@ class Context {
   // Record the index of key in the path.
   list<int> index_set_;
 
-  auto IsRootPage(page_id_t page_id) -> bool { return page_id == root_page_id_; }
+  auto IsRootPage(page_id_t page_id) const -> bool { return page_id == root_page_id_; }
 };
 
 #define BPLUSTREE_TYPE BPlusTree<KeyType, ValueType, KeyComparator>
