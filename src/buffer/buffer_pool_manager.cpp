@@ -73,7 +73,7 @@ auto BufferPoolManager::FetchPage(page_id_t page_id) -> Page * {
         disk_manager_->WritePage(pages_[fid].page_id_, pages_[fid].GetData());
         pages_[fid].is_dirty_ = false;
       }
-      page_table_.erase(it);
+      page_table_.erase(page_table_.find(pages_[fid].page_id_));
     } else {
       return nullptr;
     }

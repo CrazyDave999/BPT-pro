@@ -1,5 +1,6 @@
 #pragma once
 #include <iostream>
+#include <list>
 #include <optional>
 #include <shared_mutex>
 #include <string>
@@ -35,7 +36,7 @@ class Context {
   page_id_t root_page_id_{INVALID_PAGE_ID};
 
   // Store the write guards of the pages that you're modifying here.
-  list<WritePageGuard> write_set_;
+  std::list<WritePageGuard> write_set_;
 
   // You may want to use this when getting value, but not necessary.
   list<ReadPageGuard> read_set_;
@@ -83,14 +84,14 @@ class BPlusTree {
 
   // Insert a key-value pair into this B+ tree.
   auto Insert(const KeyType &key, const ValueType &value) -> bool {
-    auto pr = Insert(key, value, Protocol::Optimistic);
-    if (pr.first) {
-      return true;
-    }
-    if (pr.second) {
-      return Insert(key, value, Protocol::Pessimistic).first;
-    }
-    return false;
+    //    auto pr = Insert(key, value, Protocol::Optimistic);
+    //    if (pr.first) {
+    //      return true;
+    //    }
+    //    if (pr.second) {
+    return Insert(key, value, Protocol::Pessimistic).first;
+    //    }
+    //    return false;
   }
 
   // Remove a key and its value from this B+ tree.
@@ -102,7 +103,7 @@ class BPlusTree {
   }
 
   // Return the value associated with a given key
-  void Find(const KeyType &key, vector<KeyType> *result) {
+  void Find(const KeyType &key, std::vector<KeyType> *result) {
     auto header_page_guard = bpm_->FetchPageRead(header_page_id_);
     auto header_page = header_page_guard.As<BPlusTreeHeaderPage>();
     if (header_page->root_page_id_ == INVALID_PAGE_ID) {
@@ -253,6 +254,13 @@ class BPlusTree {
   auto SplitLeafPage(LeafPage *page, page_id_t *n_page_id, Context &ctx) -> LeafPage * {
     auto n_page_guard = bpm_->NewPageGuarded(n_page_id);
     auto *n_page = n_page_guard.AsMut<LeafPage>();
+
+    //    // debug
+    //    int values[page->GetSize()];
+    //    for (int i = 0; i < page->GetSize(); ++i) {
+    //      values[i] = page->KeyAt(i).second;
+    //    }
+
     n_page->Init(leaf_max_size_);
     auto size = page->GetSize();
     for (int i = size >> 1; i < size; ++i) {
@@ -276,7 +284,20 @@ class BPlusTree {
     }
     ctx.write_set_.pop_back();
     auto *p_page = ctx.write_set_.back().template AsMut<InternalPage>();
+
+    //    // debug
+    //    int p_values[p_page->GetSize()];
+    //    for (int i = 0; i < p_page->GetSize(); ++i) {
+    //      p_values[i] = p_page->KeyAt(i).second;
+    //    }
+    //    auto key_at_0 = n_page->KeyAt(0);
+
     InsertKeyValue(p_page, n_page->KeyAt(0), *n_page_id);
+
+    //    int p_p_values[p_page->GetSize()];
+    //    for (int i = 0; i < p_page->GetSize(); ++i) {
+    //      p_p_values[i] = p_page->KeyAt(i).second;
+    //    }
     return n_page;
   }
 
@@ -512,11 +533,21 @@ class BPlusTree {
           }
         }
         auto *internal_page = reinterpret_cast<InternalPage *>(bpt_page);
+
+        //        int values[internal_page->GetSize()];
+        //        for (int i = 0; i < internal_page->GetSize(); i++) {
+        //          values[i] = internal_page->KeyAt(i).second;
+        //        }
+
         auto l = UpperBound(internal_page, key) - 1;
         ctx.write_set_.push_back(bpm_->FetchPageWrite(internal_page->ValueAt(l)));
         bpt_page = ctx.write_set_.back().AsMut<BPlusTreePage>();
       }
       auto *leaf_page = reinterpret_cast<LeafPage *>(bpt_page);
+      //      int values[leaf_page->GetSize()];
+      //      for (int i = 0; i < leaf_page->GetSize(); i++) {
+      //        values[i] = leaf_page->KeyAt(i).second;
+      //      }
       if (InsertKeyValue(leaf_page, key, value)) {
         if (leaf_page->GetSize() == leaf_page->GetMaxSize()) {
           page_id_t n_page_id;
@@ -549,7 +580,7 @@ class BPlusTree {
 
     auto page_id = ctx.root_page_id_;
     ctx.read_set_.push_back(bpm_->FetchPageRead(page_id));
-    auto bpt_page = ctx.read_set_.back().As<BPlusTreePage>();
+    auto *bpt_page = ctx.read_set_.back().As<BPlusTreePage>();
     while (!bpt_page->IsLeafPage()) {
       auto *internal_page = reinterpret_cast<const InternalPage *>(bpt_page);
       auto l = UpperBound(internal_page, key) - 1;
@@ -671,7 +702,7 @@ class BPlusTree {
     return {false, true};
   }
 
-  void Find(const KeyType &key, vector<KeyType> *result, ReadPageGuard &guard) {
+  void Find(const KeyType &key, std::vector<KeyType> *result, ReadPageGuard &guard) {
     auto *page = guard.template As<BPlusTreePage>();
     if (page->IsLeafPage()) {
       auto leaf_page = reinterpret_cast<const LeafPage *>(page);
@@ -686,13 +717,29 @@ class BPlusTree {
     auto internal_page = reinterpret_cast<const InternalPage *>(page);
     int l = internal_page->LowerBoundByFirst(key, comparator_) - 1;
     int r = internal_page->UpperBoundByFirst(key, comparator_) - 1;
-    std::vector<ReadPageGuard> n_guards;
+    //    std::vector<ReadPageGuard> n_guards;
+    //    for (int i = l; i <= r; ++i) {
+    //      n_guards.push_back(bpm_->FetchPageRead(internal_page->ValueAt(i)));
+    //    }
+    //    guard.Drop();
+    //    for (auto &grd : n_guards) {
+    //      Find(key, result, grd);
+    //    }
+    page_id_t son_page_id[r - l + 1];
     for (int i = l; i <= r; ++i) {
-      n_guards.push_back(bpm_->FetchPageRead(internal_page->ValueAt(i)));
+      son_page_id[i - l] = internal_page->ValueAt(i);
     }
     guard.Drop();
-    for (auto &grd : n_guards) {
-      Find(key, result, grd);
+    for (int i = l; i <= r; ++i) {
+      auto n_guard = bpm_->FetchPageRead(son_page_id[i - l]);
+
+      //      auto *n_page = n_guard.template As<LeafPage>();
+      //      int values[n_page->GetSize()];
+      //      for (int j = 0; j < n_page->GetSize(); j++) {
+      //        values[j] = n_page->KeyAt(j).second;
+      //      }
+
+      Find(key, result, n_guard);
     }
   }
 

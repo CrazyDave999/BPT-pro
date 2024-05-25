@@ -6,7 +6,7 @@ namespace CrazyDave {
 
 #define B_PLUS_TREE_INTERNAL_PAGE_TYPE BPlusTreeInternalPage<KeyType, ValueType, KeyComparator>
 #define INTERNAL_PAGE_HEADER_SIZE 12
-#define INTERNAL_PAGE_SIZE ((BUSTUB_PAGE_SIZE - INTERNAL_PAGE_HEADER_SIZE) / (sizeof(MappingType)))
+#define INTERNAL_PAGE_SIZE ((BUSTUB_PAGE_SIZE - INTERNAL_PAGE_HEADER_SIZE) / (sizeof(MappingType)) - 1)
 /**
  * Store n indexed keys and n+1 child pointers (page_id) within internal page.
  * Pointer PAGE_ID(i) points to a subtree in which all keys K satisfy:
@@ -33,7 +33,7 @@ class BPlusTreeInternalPage : public BPlusTreePage {
    * the creation of a new page to make a valid BPlusTreeInternalPage
    * @param max_size Maximal size of the page
    */
-  void Init(int max_size = INTERNAL_PAGE_SIZE - 1){
+  void Init(int max_size = INTERNAL_PAGE_SIZE - 1) {
     SetPageType(IndexPageType::INTERNAL_PAGE);
     SetSize(0);
     SetMaxSize(max_size);
@@ -43,20 +43,20 @@ class BPlusTreeInternalPage : public BPlusTreePage {
    * @param index The index of the key to get. Index must be non-zero.
    * @return Key at index
    */
-  auto KeyAt(int index) const -> KeyType{ return array_[index].first; }
+  auto KeyAt(int index) const -> KeyType { return array_[index].first; }
 
   /**
    *
    * @param index The index of the key to set. Index must be non-zero.
    * @param key The new value for key
    */
-  void SetKeyAt(int index, const KeyType &key){ array_[index].first = key; }
+  void SetKeyAt(int index, const KeyType &key) { array_[index].first = key; }
 
   /**
    *
    * @param value the value to search for
    */
-  auto ValueIndex(const ValueType &value) const -> int{
+  auto ValueIndex(const ValueType &value) const -> int {
     for (int i = 0; i < GetSize(); ++i) {
       if (array_[i].second == value) {
         return i;
@@ -70,9 +70,9 @@ class BPlusTreeInternalPage : public BPlusTreePage {
    * @param index the index
    * @return the value at the index
    */
-  auto ValueAt(int index) const -> ValueType{ return array_[index].second; }
+  auto ValueAt(int index) const -> ValueType { return array_[index].second; }
 
-  void InsertAt(int index, const KeyType &key, const ValueType &value){
+  void InsertAt(int index, const KeyType &key, const ValueType &value) {
     for (int i = GetSize(); i > index; --i) {
       array_[i] = array_[i - 1];
     }
@@ -81,14 +81,14 @@ class BPlusTreeInternalPage : public BPlusTreePage {
     IncreaseSize(1);
   }
 
-  void RemoveAt(int index){
+  void RemoveAt(int index) {
     for (int i = index; i < GetSize() - 1; ++i) {
       array_[i] = array_[i + 1];
     }
     IncreaseSize(-1);
   }
 
-  auto PairAt(int index) const -> const MappingType &{ return array_[index]; }
+  auto PairAt(int index) const -> const MappingType & { return array_[index]; }
 
   void InsertAt(int index, const MappingType &pair) {
     for (int i = GetSize(); i > index; --i) {
@@ -98,7 +98,7 @@ class BPlusTreeInternalPage : public BPlusTreePage {
     IncreaseSize(1);
   }
 
-  auto LowerBoundByFirst(const KeyType &key, const KeyComparator &cmp) const -> int{
+  auto LowerBoundByFirst(const KeyType &key, const KeyComparator &cmp) const -> int {
     int l = 1;
     int r = GetSize();
     while (l < r) {

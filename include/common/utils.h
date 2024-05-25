@@ -77,9 +77,10 @@ class pair {
   }
 };
 
-template <class KeyFirst,class KeySecond, class ValueType>
+template <class KeyFirst, class KeySecond, class ValueType>
 class Comparator {
   using KeyType = pair<KeyFirst, KeySecond>;
+
  public:
   auto operator()(const KeyType &k1, const KeyType &k2) const -> int {
     if (k1 < k2) {
@@ -109,7 +110,6 @@ class Comparator {
     return 0;
   }
 };
-
 
 }  // namespace CrazyDave
 #endif  // BPT_PRO_UTILS_H

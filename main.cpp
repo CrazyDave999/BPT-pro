@@ -10,15 +10,14 @@ auto main() -> int {
   //                                                                                                           30);
   CrazyDave::BPlusTree<CrazyDave::pair<CrazyDave::String<65>, int>, int,
                        CrazyDave::Comparator<CrazyDave::String<65>, int, int>>
-      bpt("my_bpt", 0, 5000, 30);
+      bpt("my_bpt", 0, 300, 30);
 
-  //  auto y = std::freopen("../Bpt_data/11.in", "r", stdin);
+  //  auto y = std::freopen("../Bpt_data/16.in", "r", stdin);
   //  y = std::freopen("../output.txt", "w", stdout);
   std::ios::sync_with_stdio(false);
   int n;
   std::cin >> n;
   while (n--) {
-    bool flag = n == 3949;
     CrazyDave::String<65> op, index;
     int value;
     std::cin >> op;
@@ -37,7 +36,7 @@ auto main() -> int {
       //      auto index_hs = CrazyDave::HashBytes(index.c_str());
       //      CrazyDave::vector<CrazyDave::pair<uint64_t, int>> res;
       //      bpt.Find({index_hs, 0}, &res);
-      CrazyDave::vector<CrazyDave::pair<CrazyDave::String<65>, int>> res;
+      std::vector<CrazyDave::pair<CrazyDave::String<65>, int>> res;
       bpt.Find({index, 0}, &res);
       for (auto x : res) {
         std::cout << x.second << ' ';
