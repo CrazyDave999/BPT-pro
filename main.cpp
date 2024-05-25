@@ -27,12 +27,12 @@ auto main() -> int {
       std::cin >> index >> value;
       //      auto index_hs = CrazyDave::HashBytes(index.c_str());
       //      bpt.Insert({index_hs, value}, 0);
-      bpt.insert(index,value);
+      bpt.insert(index, value);
     } else if (op[0] == 'd') {
       std::cin >> index >> value;
       //      auto index_hs = CrazyDave::HashBytes(index.c_str());
       //      bpt.Remove({index_hs, value});
-      bpt.remove(index,value);
+      bpt.remove(index, value);
     } else {
       std::cin >> index;
       //      auto index_hs = CrazyDave::HashBytes(index.c_str());
