@@ -625,4 +625,7 @@ class BPlusTree {
   page_id_t header_page_id_;
 };
 
+template <class KeyType, class ValueType>
+using BPT = BPlusTree<pair<KeyType, ValueType>, char, Comparator<KeyType, ValueType, char>>;
+
 }  // namespace CrazyDave
