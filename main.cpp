@@ -27,21 +27,21 @@ auto main() -> int {
       std::cin >> index >> value;
       //      auto index_hs = CrazyDave::HashBytes(index.c_str());
       //      bpt.Insert({index_hs, value}, 0);
-      bpt.Insert({index, value}, 0);
+      bpt.insert(index,value);
     } else if (op[0] == 'd') {
       std::cin >> index >> value;
       //      auto index_hs = CrazyDave::HashBytes(index.c_str());
       //      bpt.Remove({index_hs, value});
-      bpt.Remove({index, value});
+      bpt.remove(index,value);
     } else {
       std::cin >> index;
       //      auto index_hs = CrazyDave::HashBytes(index.c_str());
       //      CrazyDave::vector<CrazyDave::pair<uint64_t, int>> res;
       //      bpt.Find({index_hs, 0}, &res);
-      std::vector<CrazyDave::pair<CrazyDave::String<65>, int>> res;
-      bpt.Find({index, 0}, &res);
+      CrazyDave::vector<int> res;
+      bpt.find(index, res);
       for (auto x : res) {
-        std::cout << x.second << ' ';
+        std::cout << x << ' ';
       }
       if (res.empty()) {
         std::cout << "null";

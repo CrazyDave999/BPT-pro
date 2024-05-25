@@ -1,6 +1,3 @@
-#pragma once
-// #include <mutex>  // NOLINT
-
 #include "common/config.h"
 #include "data_structures/linked_hashmap.h"
 #include "data_structures/list.h"
@@ -53,7 +50,7 @@ class LRUKReplacer {
   /**
    * TODO(P1): Add implementation
    *
-   * @brief Find the frame with largest backward k-distance and evict that frame. Only frames
+   * @brief find the frame with largest backward k-distance and evict that frame. Only frames
    * that are marked as 'evictable' are candidates for eviction.
    *
    * A frame with less than k historical references is given +inf as its backward k-distance.
@@ -105,14 +102,14 @@ class LRUKReplacer {
   /**
    * TODO(P1): Add implementation
    *
-   * @brief Remove an evictable frame from replacer, along with its access history.
+   * @brief remove an evictable frame from replacer, along with its access history.
    * This function should also decrement replacer's size if removal is successful.
    *
    * Note that this is different from evicting a frame, which always remove the frame
    * with largest backward k-distance. This function removes specified frame id,
    * no matter what its backward k-distance is.
    *
-   * If Remove is called on a non-evictable frame, throw an exception or abort the
+   * If remove is called on a non-evictable frame, throw an exception or abort the
    * process.
    *
    * If specified frame is not found, directly return from this function.
@@ -131,7 +128,7 @@ class LRUKReplacer {
   auto Size() -> size_t;
 
  private:
-  std::unordered_map<frame_id_t, LRUKNode> node_store_;
+  linked_hashmap<frame_id_t, LRUKNode> node_store_;
   size_t current_timestamp_{0};
   size_t curr_size_{0};
   size_t replacer_size_;

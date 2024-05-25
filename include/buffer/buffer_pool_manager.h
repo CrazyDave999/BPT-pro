@@ -1,8 +1,7 @@
 #pragma once
-#include <mutex>  // NOLINT
+
 #include "buffer/lru_k_replacer.h"
 #include "common/config.h"
-#include "data_structures/map.h"
 #include "data_structures/linked_hashmap.h"
 #include "data_structures/list.h"
 #include "storage/disk/my_disk_manager.h"
@@ -167,7 +166,7 @@ class BufferPoolManager {
   /** Pointer to the disk manager. */
   MyDiskManager *disk_manager_;
   /** Page table for keeping track of buffer pool pages. */
-  std::unordered_map<page_id_t, frame_id_t> page_table_;
+  linked_hashmap<page_id_t, frame_id_t> page_table_;
   /** Replacer to find unpinned pages for replacement. */
   LRUKReplacer *replacer_;
   /** List of free frames that don't have any pages on them. */

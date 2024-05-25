@@ -1,10 +1,7 @@
 #pragma once
 #include <iostream>
-#include <list>
 #include <optional>
-#include <shared_mutex>
 #include <string>
-#include <utility>
 
 #include "common/config.h"
 #include "common/utils.h"
@@ -36,7 +33,7 @@ class Context {
   page_id_t root_page_id_{INVALID_PAGE_ID};
 
   // Store the write guards of the pages that you're modifying here.
-  std::list<WritePageGuard> write_set_;
+  list<WritePageGuard> write_set_;
 
   // You may want to use this when getting value, but not necessary.
   list<ReadPageGuard> read_set_;
@@ -50,8 +47,9 @@ class Context {
 #define BPLUSTREE_TYPE BPlusTree<KeyType, ValueType, KeyComparator>
 
 // Main class providing the API for the Interactive B+ Tree.
-template <typename KeyType, typename ValueType, typename KeyComparator>
+template <typename KeyFirst, typename KeySecond, typename ValueType, typename KeyComparator>
 class BPlusTree {
+  using KeyType = pair<KeyFirst, KeySecond>;
   using InternalPage = BPlusTreeInternalPage<KeyType, page_id_t, KeyComparator>;
   using LeafPage = BPlusTreeLeafPage<KeyType, ValueType, KeyComparator>;
   enum class Protocol { Optimistic, Pessimistic };
@@ -82,129 +80,12 @@ class BPlusTree {
     return root_page->root_page_id_ == INVALID_PAGE_ID;
   }
 
-  /**
-   * @return whether insert successfully and if false, whether it is because leaf node unsafe.
-   */
-  auto Insert(const KeyType &key, const ValueType &value) -> pair<bool, bool> {
-    Context ctx;
-    ctx.header_write_guard_ = bpm_->FetchPageWrite(header_page_id_);
-    ctx.root_page_id_ = ctx.header_write_guard_->AsMut<BPlusTreeHeaderPage>()->root_page_id_;
-    if (ctx.root_page_id_ == INVALID_PAGE_ID) {
-      page_id_t n_root_page_id;
-      auto n_root_guard = bpm_->NewPageGuarded(&n_root_page_id);
-      auto *n_root_page = n_root_guard.AsMut<LeafPage>();
-      n_root_page->Init(leaf_max_size_);
-      auto *header_page = ctx.header_write_guard_->AsMut<BPlusTreeHeaderPage>();
-      header_page->root_page_id_ = n_root_page_id;
-      n_root_page->InsertAt(0, key, value);
-      return {true, true};
-    }
+  void insert(const KeyFirst &key, const KeySecond &value) { insert({key, value}, {}); }
 
-    ctx.write_set_.push_back(bpm_->FetchPageWrite(ctx.root_page_id_));
-    auto bpt_page = ctx.write_set_.back().AsMut<BPlusTreePage>();
-    while (!bpt_page->IsLeafPage()) {
-      if (bpt_page->GetSize() < bpt_page->GetMaxSize()) {  // safe
-        while (ctx.write_set_.size() > 1) {
-          ctx.write_set_.pop_front();
-        }
-      }
-      auto *internal_page = reinterpret_cast<InternalPage *>(bpt_page);
-
-      auto l = UpperBound(internal_page, key) - 1;
-      ctx.write_set_.push_back(bpm_->FetchPageWrite(internal_page->ValueAt(l)));
-      bpt_page = ctx.write_set_.back().AsMut<BPlusTreePage>();
-    }
-    auto *leaf_page = reinterpret_cast<LeafPage *>(bpt_page);
-
-    if (InsertKeyValue(leaf_page, key, value)) {
-      if (leaf_page->GetSize() == leaf_page->GetMaxSize()) {
-        page_id_t n_page_id;
-        SplitLeafPage(leaf_page, &n_page_id, ctx);
-        InternalPage *internal_page;
-        while (ctx.write_set_.size() > 1) {
-          internal_page = ctx.write_set_.back().AsMut<InternalPage>();
-          SplitInternalPage(internal_page, &n_page_id, ctx);
-        }
-        // 三种可能
-        // 1. 根是leaf，在Split操作中已经完成根的更新，ctx.write_set_为空
-        // 2. 在根以下没有遇到过safe node，ctx.write_set_中有一个元素，是根的写锁，根有可能需要分裂
-        // 3. 在根以下遇到过safe node，ctx.write_set_中有一个元素，是safe node
-        if (!ctx.write_set_.empty()) {
-          internal_page = ctx.write_set_.back().template AsMut<InternalPage>();
-          if (internal_page->GetSize() > internal_page->GetMaxSize()) {
-            SplitInternalPage(internal_page, &n_page_id, ctx);
-          }
-        }
-      }
-      return {true, false};
-    }
-    return {false, false};
-  }
-
-  /**
-   * @return whether insert successfully and if false, whether it is because leaf node unsafe.
-   */
-  auto Remove(const KeyType &key) -> pair<bool, bool> {
-    Context ctx;
-    // 用栈模拟递归
-    ctx.header_write_guard_ = bpm_->FetchPageWrite(header_page_id_);
-    ctx.root_page_id_ = ctx.header_write_guard_->AsMut<BPlusTreeHeaderPage>()->root_page_id_;
-    if (ctx.root_page_id_ == INVALID_PAGE_ID) {  // 空树
-      return {true, false};
-    }
-
-    ctx.write_set_.push_back(bpm_->FetchPageWrite(ctx.root_page_id_));
-    auto bpt_page = ctx.write_set_.back().AsMut<BPlusTreePage>();
-    while (!bpt_page->IsLeafPage()) {
-      if (bpt_page->GetSize() > bpt_page->GetMinSize()) {  // safe
-        while (ctx.write_set_.size() > 1) {
-          ctx.write_set_.pop_front();
-          ctx.index_set_.pop_front();
-        }
-      }
-      auto *internal_page = reinterpret_cast<InternalPage *>(bpt_page);
-      auto l = UpperBound(internal_page, key) - 1;
-      ctx.write_set_.push_back(bpm_->FetchPageWrite(internal_page->ValueAt(l)));
-      ctx.index_set_.push_back(l);
-      bpt_page = ctx.write_set_.back().AsMut<BPlusTreePage>();
-    }
-    auto leaf_page = reinterpret_cast<LeafPage *>(bpt_page);
-    RemoveKeyValue(leaf_page, key);
-
-    if (leaf_page->GetSize() >= leaf_page->GetMinSize()) {
-      return {true, false};
-    }
-    if (ctx.IsRootPage(ctx.write_set_.back().PageId())) {  // 根就是叶子
-      if (leaf_page->GetSize() == 0) {
-        ctx.header_write_guard_->AsMut<BPlusTreeHeaderPage>()->root_page_id_ = INVALID_PAGE_ID;
-        bpm_->DeletePage(ctx.root_page_id_);
-      }
-      return {true, false};
-    }
-    if (TryAdoptFromNeighbor(leaf_page, ctx)) {
-      return {true, false};
-    }
-    MergeLeafPage(leaf_page, ctx);
-    auto *page = ctx.write_set_.back().AsMut<InternalPage>();
-    while (ctx.write_set_.size() > 1) {
-      if (TryAdoptFromNeighbor(page, ctx)) {
-        return {true, false};
-      }
-      MergeInternalPage(page, ctx);
-      page = ctx.write_set_.back().AsMut<InternalPage>();
-    }
-    // 两种可能：
-    // 1. ctx.write_set_中仅剩根的写锁，这时有可能根仅剩一个儿子，需要换根
-    // 2. ctx.write_set_中仅剩安全节点的写锁，什么都不用做
-    if (page->GetSize() == 1) {
-      ctx.header_write_guard_->AsMut<BPlusTreeHeaderPage>()->root_page_id_ = page->ValueAt(0);
-      bpm_->DeletePage(ctx.root_page_id_);
-    }
-    return {true, false};
-  }
+  void remove(const KeyFirst &key, const KeySecond &value) { remove({key, value}); }
 
   // Return the value associated with a given key
-  void Find(const KeyType &key, std::vector<KeyType> *result) {
+  void find(const KeyFirst &key, vector<KeySecond> &result) {
     auto header_page_guard = bpm_->FetchPageRead(header_page_id_);
     auto header_page = header_page_guard.As<BPlusTreeHeaderPage>();
     if (header_page->root_page_id_ == INVALID_PAGE_ID) {
@@ -213,7 +94,7 @@ class BPlusTree {
     }
     auto guard = bpm_->FetchPageRead(header_page->root_page_id_);
     header_page_guard.Drop();
-    Find(key, result, guard);
+    find({key, {}}, result, guard);
   }
 
   // Return the page id of the root node
@@ -589,14 +470,135 @@ class BPlusTree {
     //  std::cout << "Successfully merged. After merging, l_page: " << l_page->ToString() << "\n";  // debug
   }
 
-  void Find(const KeyType &key, std::vector<KeyType> *result, ReadPageGuard &guard) {
+  /**
+   * @return whether insert successfully and if false, whether it is because leaf node unsafe.
+   */
+  auto insert(const KeyType &key, const ValueType &value) -> pair<bool, bool> {
+    Context ctx;
+    ctx.header_write_guard_ = bpm_->FetchPageWrite(header_page_id_);
+    ctx.root_page_id_ = ctx.header_write_guard_->AsMut<BPlusTreeHeaderPage>()->root_page_id_;
+    if (ctx.root_page_id_ == INVALID_PAGE_ID) {
+      page_id_t n_root_page_id;
+      auto n_root_guard = bpm_->NewPageGuarded(&n_root_page_id);
+      auto *n_root_page = n_root_guard.AsMut<LeafPage>();
+      n_root_page->Init(leaf_max_size_);
+      auto *header_page = ctx.header_write_guard_->AsMut<BPlusTreeHeaderPage>();
+      header_page->root_page_id_ = n_root_page_id;
+      n_root_page->InsertAt(0, key, value);
+      return {true, true};
+    }
+
+    ctx.write_set_.push_back(bpm_->FetchPageWrite(ctx.root_page_id_));
+    auto bpt_page = ctx.write_set_.back().AsMut<BPlusTreePage>();
+    while (!bpt_page->IsLeafPage()) {
+      if (bpt_page->GetSize() < bpt_page->GetMaxSize()) {  // safe
+        while (ctx.write_set_.size() > 1) {
+          ctx.write_set_.pop_front();
+        }
+      }
+      auto *internal_page = reinterpret_cast<InternalPage *>(bpt_page);
+
+      auto l = UpperBound(internal_page, key) - 1;
+      ctx.write_set_.push_back(bpm_->FetchPageWrite(internal_page->ValueAt(l)));
+      bpt_page = ctx.write_set_.back().AsMut<BPlusTreePage>();
+    }
+    auto *leaf_page = reinterpret_cast<LeafPage *>(bpt_page);
+
+    if (InsertKeyValue(leaf_page, key, value)) {
+      if (leaf_page->GetSize() == leaf_page->GetMaxSize()) {
+        page_id_t n_page_id;
+        SplitLeafPage(leaf_page, &n_page_id, ctx);
+        InternalPage *internal_page;
+        while (ctx.write_set_.size() > 1) {
+          internal_page = ctx.write_set_.back().AsMut<InternalPage>();
+          SplitInternalPage(internal_page, &n_page_id, ctx);
+        }
+        // 三种可能
+        // 1. 根是leaf，在Split操作中已经完成根的更新，ctx.write_set_为空
+        // 2. 在根以下没有遇到过safe node，ctx.write_set_中有一个元素，是根的写锁，根有可能需要分裂
+        // 3. 在根以下遇到过safe node，ctx.write_set_中有一个元素，是safe node
+        if (!ctx.write_set_.empty()) {
+          internal_page = ctx.write_set_.back().template AsMut<InternalPage>();
+          if (internal_page->GetSize() > internal_page->GetMaxSize()) {
+            SplitInternalPage(internal_page, &n_page_id, ctx);
+          }
+        }
+      }
+      return {true, false};
+    }
+    return {false, false};
+  }
+
+  /**
+   * @return whether insert successfully and if false, whether it is because leaf node unsafe.
+   */
+  auto remove(const KeyType &key) -> pair<bool, bool> {
+    Context ctx;
+    // 用栈模拟递归
+    ctx.header_write_guard_ = bpm_->FetchPageWrite(header_page_id_);
+    ctx.root_page_id_ = ctx.header_write_guard_->AsMut<BPlusTreeHeaderPage>()->root_page_id_;
+    if (ctx.root_page_id_ == INVALID_PAGE_ID) {  // 空树
+      return {true, false};
+    }
+
+    ctx.write_set_.push_back(bpm_->FetchPageWrite(ctx.root_page_id_));
+    auto bpt_page = ctx.write_set_.back().AsMut<BPlusTreePage>();
+    while (!bpt_page->IsLeafPage()) {
+      if (bpt_page->GetSize() > bpt_page->GetMinSize()) {  // safe
+        while (ctx.write_set_.size() > 1) {
+          ctx.write_set_.pop_front();
+          ctx.index_set_.pop_front();
+        }
+      }
+      auto *internal_page = reinterpret_cast<InternalPage *>(bpt_page);
+      auto l = UpperBound(internal_page, key) - 1;
+      ctx.write_set_.push_back(bpm_->FetchPageWrite(internal_page->ValueAt(l)));
+      ctx.index_set_.push_back(l);
+      bpt_page = ctx.write_set_.back().AsMut<BPlusTreePage>();
+    }
+    auto leaf_page = reinterpret_cast<LeafPage *>(bpt_page);
+    RemoveKeyValue(leaf_page, key);
+
+    if (leaf_page->GetSize() >= leaf_page->GetMinSize()) {
+      return {true, false};
+    }
+    if (ctx.IsRootPage(ctx.write_set_.back().PageId())) {  // 根就是叶子
+      if (leaf_page->GetSize() == 0) {
+        ctx.header_write_guard_->AsMut<BPlusTreeHeaderPage>()->root_page_id_ = INVALID_PAGE_ID;
+        bpm_->DeletePage(ctx.root_page_id_);
+      }
+      return {true, false};
+    }
+    if (TryAdoptFromNeighbor(leaf_page, ctx)) {
+      return {true, false};
+    }
+    MergeLeafPage(leaf_page, ctx);
+    auto *page = ctx.write_set_.back().AsMut<InternalPage>();
+    while (ctx.write_set_.size() > 1) {
+      if (TryAdoptFromNeighbor(page, ctx)) {
+        return {true, false};
+      }
+      MergeInternalPage(page, ctx);
+      page = ctx.write_set_.back().AsMut<InternalPage>();
+    }
+    // 两种可能：
+    // 1. ctx.write_set_中仅剩根的写锁，这时有可能根仅剩一个儿子，需要换根
+    // 2. ctx.write_set_中仅剩安全节点的写锁，什么都不用做
+    if (page->GetSize() == 1) {
+      ctx.header_write_guard_->AsMut<BPlusTreeHeaderPage>()->root_page_id_ = page->ValueAt(0);
+      bpm_->DeletePage(ctx.root_page_id_);
+    }
+    return {true, false};
+  }
+
+  void find(const KeyType &key, vector<KeySecond> &result, ReadPageGuard &guard) {
     auto *page = guard.template As<BPlusTreePage>();
     if (page->IsLeafPage()) {
       auto leaf_page = reinterpret_cast<const LeafPage *>(page);
       int l = leaf_page->LowerBoundByFirst(key, comparator_);
       int r = leaf_page->UpperBoundByFirst(key, comparator_);
       for (int i = l; i < r; ++i) {
-        result->push_back(leaf_page->KeyAt(i));
+        result.push_back(leaf_page->KeyAt(i).second);
       }
       guard.Drop();
       return;
@@ -612,7 +614,7 @@ class BPlusTree {
     guard.Drop();
     for (int i = l; i <= r; ++i) {
       auto n_guard = bpm_->FetchPageRead(son_page_id[i - l]);
-      Find(key, result, n_guard);
+      find(key, result, n_guard);
     }
   }
 
@@ -626,6 +628,6 @@ class BPlusTree {
 };
 
 template <class KeyType, class ValueType>
-using BPT = BPlusTree<pair<KeyType, ValueType>, char, Comparator<KeyType, ValueType, char>>;
+using BPT = BPlusTree<KeyType, ValueType, char, Comparator<KeyType, ValueType, char>>;
 
 }  // namespace CrazyDave

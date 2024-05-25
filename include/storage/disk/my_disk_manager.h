@@ -1,12 +1,9 @@
 #ifndef BPT_PRO_DISK_MANAGER_H
 #define BPT_PRO_DISK_MANAGER_H
 
-#include <atomic>
 #include <fstream>
-#include <mutex>
 #include <string>
 #include "common/config.h"
-#include "concurrent_queue.h"
 #include "file_wrapper.h"
 namespace CrazyDave {
 
