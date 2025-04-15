@@ -2,6 +2,7 @@
 #define BPT_PRO_UTILS_H
 #include <cstring>
 #include <string>
+#include <cstdint>
 namespace CrazyDave {
 
 template <size_t L>
