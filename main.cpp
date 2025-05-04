@@ -4,6 +4,8 @@
 #include "storage/index/b_plus_tree.h"
 
 auto main() -> int {
+  freopen("test.in","r",stdin);
+  freopen("test.out","w",stdout);
   std::ios::sync_with_stdio(false);
 
   //  CrazyDave::BPlusTree<CrazyDave::pair<uint64_t, int>, int, CrazyDave::Comparator<uint64_t, int, int>> bpt("my_bpt",
