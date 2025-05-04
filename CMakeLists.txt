@@ -12,6 +12,6 @@ set(CMAKE_CXX_STANDARD 20)
 #set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O3  -Wall")
 set(SRC_LIST main.cpp)
 include_directories(include)
-add_executable(${PROJECT_NAME} ${SRC_LIST})
+add_executable(code ${SRC_LIST})
 
 add_subdirectory(src)

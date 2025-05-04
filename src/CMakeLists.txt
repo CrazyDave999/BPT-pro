@@ -13,4 +13,4 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 add_library(BPT_src ${SRC_FILES})
 
 # Link the library to the main executable
-target_link_libraries(${PROJECT_NAME} PRIVATE BPT_src)
+target_link_libraries(code PRIVATE BPT_src)
