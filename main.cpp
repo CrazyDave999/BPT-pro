@@ -12,7 +12,7 @@ auto main() -> int {
   //  0,
   //                                                                                                           3000,
   //                                                                                                           30);
-  CrazyDave::BPT<CrazyDave::String<65>, int> bpt("my_bpt", 0, 3000, 30);
+  CrazyDave::BPT<CrazyDave::String<65>, int> bpt("my_bpt", 0, 5000, 30);
   //  CrazyDave::BPlusTree<CrazyDave::pair<CrazyDave::String<65>, int>, int,
   //                       CrazyDave::Comparator<CrazyDave::String<65>, int, int>>
   //      bpt("my_bpt", 0, 300, 30);
