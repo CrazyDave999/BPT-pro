@@ -8,17 +8,13 @@ auto main() -> int {
   // freopen("test.out","w",stdout);
   std::ios::sync_with_stdio(false);
 
-  //  CrazyDave::BPlusTree<CrazyDave::pair<uint64_t, int>, int, CrazyDave::Comparator<uint64_t, int, int>> bpt("my_bpt",
-  //  0,
-  //                                                                                                           3000,
-  //                                                                                                           30);
-  CrazyDave::BPT<CrazyDave::String<65>, int> bpt("my_bpt", 0, 2500, 1);
-  //  CrazyDave::BPlusTree<CrazyDave::pair<CrazyDave::String<65>, int>, int,
-  //                       CrazyDave::Comparator<CrazyDave::String<65>, int, int>>
-  //      bpt("my_bpt", 0, 300, 30);
+  CrazyDave::BPT<uint64_t, int> bpt("my_bpt", 0, 2500, 1);
+  // CrazyDave::BPT<CrazyDave::String<65>, int> bpt("my_bpt", 0, 2500, 1);
 
-  //  auto y = std::freopen("../Bpt_data/28-29", "r", stdin);
-  //  y = std::freopen("../output.txt", "w", stdout);
+
+  // auto hash_fn = [](CrazyDave::String<65> &str) {
+  //   return std::hash<std::string_view>{}(str.c_str());
+  // };
 
   int n;
   std::cin >> n;
@@ -28,22 +24,20 @@ auto main() -> int {
     std::cin >> op;
     if (op[0] == 'i') {
       std::cin >> index >> value;
-      //      auto index_hs = CrazyDave::HashBytes(index.c_str());
-      //      bpt.Insert({index_hs, value}, 0);
-      bpt.insert(index, value);
+      auto index_hs = CrazyDave::HashBytes(index.c_str());
+      bpt.insert(index_hs, value);
+      // bpt.insert(index, value);
     } else if (op[0] == 'd') {
       std::cin >> index >> value;
-      //      auto index_hs = CrazyDave::HashBytes(index.c_str());
-      //      bpt.Remove({index_hs, value});
-      bpt.remove(index, value);
+      auto index_hs = CrazyDave::HashBytes(index.c_str());
+      bpt.remove(index_hs, value);
+      // bpt.remove(index, value);
     } else {
       std::cin >> index;
-      //      auto index_hs = CrazyDave::HashBytes(index.c_str());
-      //      CrazyDave::vector<CrazyDave::pair<uint64_t, int>> res;
-      //      bpt.Find({index_hs, 0}, &res);
+      auto index_hs = CrazyDave::HashBytes(index.c_str());
       CrazyDave::vector<int> res;
-      bpt.find(index, res);
-      for (auto x : res) {
+      bpt.find(index_hs, res);
+      for (const auto x : res) {
         std::cout << x << ' ';
       }
       if (res.empty()) {
