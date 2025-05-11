@@ -38,14 +38,28 @@ class String {
   friend auto operator>>(std::istream &is, String &rhs) -> std::istream & { return is >> rhs.str_; }
   friend auto operator<<(std::ostream &os, const String &rhs) -> std::ostream & { return os << rhs.str_; }
 };
+// static inline auto HashBytes(const char *bytes) -> uint64_t {
+//   uint64_t L = strlen(bytes);
+//   uint64_t hash = L;
+//   for (size_t i = 0; i < L; ++i) {
+//     hash = ((hash << 5) ^ (hash >> 27)) ^ bytes[i];
+//   }
+//   return hash;
+// }
 static inline auto HashBytes(const char *bytes) -> uint64_t {
-  uint64_t L = strlen(bytes);
-  uint64_t hash = L;
-  for (size_t i = 0; i < L; ++i) {
-    hash = ((hash << 5) ^ (hash >> 27)) ^ bytes[i];
+  uint64_t hash = 0xcbf29ce484222325; // FNV offset basis
+  uint64_t prime = 0x100000001b3;     // FNV prime
+  for (size_t i = 0; bytes[i]; ++i) {
+    hash ^= static_cast<uint64_t>(bytes[i]);
+    hash *= prime;
+    // 加入扰动，防止相邻字符影响小
+    hash ^= (hash >> 33);
+    hash *= 0xff51afd7ed558ccd;
+    hash ^= (hash >> 33);
   }
   return hash;
 }
+
 
 template <class T1, class T2>
 class pair {
